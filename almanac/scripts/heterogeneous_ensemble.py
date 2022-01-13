@@ -5,7 +5,7 @@ from spektral.layers import GCNConv, GlobalSumPool
 from src.dataset.dataset import MultiInputDataset
 from src.models.ensembles import VotingEnsemble
 from src.utils.utils import save_evaluation_results
-import src.scoring.scoring_metrics
+from src.scoring import scoring_metrics
 
 os.environ['CUDA_VISIBLE_DEVICES'] = "3"
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
