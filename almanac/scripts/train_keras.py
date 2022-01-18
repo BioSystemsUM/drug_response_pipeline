@@ -38,6 +38,7 @@ def main(settings):
     print('Loading data')
     if settings['use_data_generators']:
         train_dataset = DataGenerator(y_filepath=settings['train_response_filepath'],
+                                      output_col='COMBOSCORE',
                                       drugA_filepath=settings['train_drugA_filepath'],
                                       drugB_filepath=settings['train_drugB_filepath'],
                                       expr_filepath=settings['train_expr_filepath'],

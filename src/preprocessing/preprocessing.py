@@ -466,7 +466,6 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 			pickle.dump(d['ivl'], f)
 
 	def get_chromosome_gene_order(self, output_filepath):
-		# it's better if we do this with the unmerged file
 		# TODO: improve code. right now it's very specific to the ALMANAC dataset and it's confusing
 		# Replace with HDGFRP3 with HDGFL3:
 		omics_genes = ['HDGFL3' if gene == 'HDGFRP3' else gene for gene in self.dataset]

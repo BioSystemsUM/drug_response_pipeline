@@ -12,8 +12,6 @@ class VotingEnsemble(object):
 	individual predictions to obtain the final prediction.
 	"""
 
-	# it could inherit from Model, but that might be confusing as self.model would be a list of Model objects instead of a single model
-
 	def __init__(self, base_models, mode):
 		self.base_models = base_models
 		self.mode = mode

@@ -4,9 +4,9 @@ from scipy.stats import spearmanr, pearsonr
 from sklearn.metrics import r2_score, mean_squared_error
 
 
-
 def keras_r2_score(y_true, y_pred):
     return tf.py_function(r2_score, [tf.cast(y_true, tf.float64), tf.cast(y_pred, tf.float64)], Tout=tf.float64)
+
 
 def keras_pearson(y_true, y_pred):
     # copied from: https://stackoverflow.com/a/46620771 (correlation coefficient loss, removing the modification they added to make it a loss)
@@ -33,20 +33,3 @@ def spearman(y, y_pred):
 
 def pearson(y, y_pred):
     return pearsonr(y, y_pred)[0]
-
-
-if __name__ == '__main__':
-    import numpy as np
-    import tensorflow as tf
-
-    a = np.array([0, 0, 0, 1, 1, 1, 1])
-    b = np.arange(7)
-    # print(pearson(a, b))
-    # print(keras_pearson(tf.convert_to_tensor(a, dtype=tf.float32), tf.convert_to_tensor(b, dtype=tf.float32)))
-    # a2 = np.array([1, 1, 1, 1, 1, 1, 1])
-    # b2 = np.arange(7)
-    # print(pearson(a2, b2))
-    # print(keras_pearson(tf.convert_to_tensor(a2, dtype=tf.float32), tf.convert_to_tensor(b2, dtype=tf.float32)))
-    #
-    print(keras_spearman(a, b))
-    print(keras_r2_score(a, b))

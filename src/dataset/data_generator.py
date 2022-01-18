@@ -9,9 +9,9 @@ class DataGenerator(keras.utils.Sequence):
     '''Generates data for Keras'''
     # based on https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
 
-    def __init__(self, y_filepath, drugA_filepath, drugB_filepath, drugA_atom_feat_filepath, drugB_atom_feat_filepath,
+    def __init__(self, y_filepath, output_col, drugA_filepath, drugB_filepath, drugA_atom_feat_filepath, drugB_atom_feat_filepath,
                  drugA_adj_filepath, drugB_adj_filepath, expr_filepath, mut_filepath, cnv_filepath, batch_size, shuffle=True):
-        self.output = pd.read_csv(y_filepath)['COMBOSCORE'].values # TODO: make this more general
+        self.output = pd.read_csv(y_filepath)[output_col].values
         self.n_rows = self.output.shape[0]
         self.indices = list(range(self.n_rows))
         self.X_filepaths = {'drugA': drugA_filepath,

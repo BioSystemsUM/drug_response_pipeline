@@ -48,7 +48,6 @@ class MultiInputDataset(object):
 
 	def load_graph_data(self, nodes_file, adj_file):
 		"""Load nodes and adjacency matrix files """
-		# TODO: add this to the load_drug methods instead??
 		if (nodes_file is not None) and (adj_file is not None):
 			drug_letter = os.path.split(os.path.splitext(nodes_file)[0])[-1].split('_')[1][-1]
 			self.X_dict['drug%s_atom_feat' % drug_letter] = self._load_features(nodes_file)
@@ -96,7 +95,6 @@ class MultiInputDataset(object):
 		return self.y
 
 	def load_feature_names(self, feature_names_filepath):
-		# TODO: find a better way to map feature names to features
 		with open(feature_names_filepath, 'rb') as f:
 			self.feature_names = pickle.load(f)
 		return self.feature_names # will be a dict

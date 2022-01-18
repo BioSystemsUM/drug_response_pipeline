@@ -144,9 +144,6 @@ class GraphFeaturizer(BaseFeaturizer):
         self.use_chirality = use_chirality
         self.normalize_adj = normalize_adj_matrix
 
-    # since I'm using a shared drug subnetwork, drugA and drugB tensors probably have to have the same shape??
-    # so max_num_atoms has to be the same for both
-
     def featurize_df(self, smiles_df, smiles_col, output_path_node_features=None, output_path_adjacency_matrices=None):
         node_features = []
         adjacency_matrices = []
@@ -156,7 +153,7 @@ class GraphFeaturizer(BaseFeaturizer):
             adjacency_matrices.append(adjacency_matrix)
 
         if self.zero_pad:
-            # zero-padding here because otherwise I can't save as numpy arrays (this what Spektral's BatchLoader does)
+            # zero-padding here because otherwise I can't save as numpy arrays (this is what Spektral's BatchLoader does)
             node_features, adjacency_matrices = zero_pad_graphs(self.max_num_atoms, node_features,
                                                                               adjacency_matrices)
 

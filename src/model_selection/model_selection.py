@@ -35,7 +35,6 @@ class KerasRayTuneSearch(object):
         self.best_hyperparams = None
 
     def _run_experiment(self, config):
-        #wait_for_gpu(gpu_memory_limit=0.01) #TODO pip install gputil.
         strategy = tf.distribute.MirroredStrategy()
         with strategy.scope():
             model = self.build_fn(**config)
@@ -67,7 +66,6 @@ class KerasRayTuneSearch(object):
         bohb_hyperband = ray.tune.schedulers.HyperBandForBOHB(time_attr='training_iteration',
                                                               max_t=100,
                                                               reduction_factor=4)
-        #bohb_search = ray.tune.suggest.bohb.TuneBOHB()
         bohb_search = bohb.TuneBOHB()
         analysis = ray.tune.run(self._run_experiment, verbose=1, config=hyperparam_space, num_samples=n_configurations,
                                 search_alg=bohb_search, scheduler=bohb_hyperband, local_dir=self.output_dir,
@@ -76,12 +74,9 @@ class KerasRayTuneSearch(object):
                                 mode=metric_mode,
                                 max_failures=3,
                                 queue_trials=True)
-                                # queue_trials=True,
-                                # raise_on_failed_trial=False)
         ray.shutdown()
 
         self.best_hyperparams = analysis.best_config
-        # self.best_model = keras.models.load_model(os.path.join(analysis.best_logdir, 'model.h5'))
         results = analysis.results_df
         results.to_csv(os.path.join(self.output_dir, 'ray_tune_results.csv'), index=False)
 
