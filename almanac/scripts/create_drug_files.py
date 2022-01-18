@@ -15,9 +15,9 @@ def create_drug_files(featurization_type):
 
 	# Split datasets before featurizing:
 	drugA_preprocessor.split(
-		split_inds_file='../data/splits/almanac/data/splits/train_val_test_groups_split_inds_12321.pkl')
+		split_inds_file='../data/splits/train_val_test_groups_split_inds_12321.pkl')
 	drugB_preprocessor.split(
-		split_inds_file='../data/splits/almanac/data/splits/train_val_test_groups_split_inds_12321.pkl')
+		split_inds_file='../data/splits/train_val_test_groups_split_inds_12321.pkl')
 
 	# Featurize drug A and drug B:
 	featurizer_options = {'ECFP4': ('ECFPFeaturizer', {'radius': 2, 'length': 1024}, 'ECFP4_1024_drugA', 'ECFP4_1024_drugB'),

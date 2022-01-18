@@ -7,7 +7,7 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 	id_col = 'CELLNAME'
 	if expr_subnetwork_type is not None:
 		omics_preprocessor = OmicsDatasetPreprocessor(
-			dataset_filepath='../almanac/data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_prot_coding.csv',
+			dataset_filepath='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_prot_coding.csv',
 			id_col='CELLNAME')
 
 		subnetwork_type_to_output_names = {'expr (landmark)': 'rnaseq_fpkm_landmark_minmaxscaled',
@@ -57,7 +57,7 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 
 		omics_preprocessor.merge(
 			dataset_to_merge_filepath='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv')
-		omics_preprocessor.split('../data/splits/almanac/data/splits/train_val_test_groups_split_inds_12321.pkl')
+		omics_preprocessor.split('../data/splits/train_val_test_groups_split_inds_12321.pkl')
 
 		if expr_subnetwork_type == 'expr (UMAP)':
 			omics_preprocessor.preprocess_split_datasets(scaler='MinMaxScaler',
@@ -91,7 +91,7 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 			output_name = 'merged_mut_pathway_level_binarized'
 		mut_preprocessor.merge(
 			dataset_to_merge_filepath='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv')
-		mut_preprocessor.split('../data/splits/almanac/data/splits/train_val_test_groups_split_inds_12321.pkl')
+		mut_preprocessor.split('../data/splits/train_val_test_groups_split_inds_12321.pkl')
 		mut_preprocessor.save_split_datasets(output_dir='../data/nci_almanac_preprocessed/omics/split',
 		                                     output_name=output_name,
 		                                     output_format='.npy',
@@ -104,7 +104,7 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 			cnv_preprocessor.filter_genes(use_targets=True)
 			cnv_preprocessor.save_full_dataset(output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/cnvs_gistic_target_genes.csv')
 			cnv_preprocessor.merge(dataset_to_merge_filepath='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv')
-			cnv_preprocessor.split('../data/splits/almanac/data/splits/train_val_test_groups_split_inds_12321.pkl')
+			cnv_preprocessor.split('../data/splits/train_val_test_groups_split_inds_12321.pkl')
 			cnv_preprocessor.save_split_datasets(output_dir='../data/nci_almanac_preprocessed/omics/split',
 			                                     output_name='merged_cnvs_gistic_target_genes',
 			                                     output_format='.npy',
