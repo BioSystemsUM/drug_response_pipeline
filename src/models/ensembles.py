@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 from tensorflow import keras
 
-import scoring_metrics
+from src.scoring import scoring_metrics
 
 class VotingEnsemble(object):
 	"""
