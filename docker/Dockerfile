@@ -47,7 +47,7 @@ RUN python3 -m pip -q --no-cache-dir install hpbandster ConfigSpace
 RUN python3 -m pip -q --no-cache-dir install git+https://github.com/samoturk/mol2vec
 RUN python3 -m pip -q --no-cache-dir install git+git://github.com/alok-ai-lab/DeepInsight.git#egg=DeepInsight
 
-RUN python3 -m pip -q --no-cache-dir install git+https://gitlab.bio.di.uminho.pt/dlrsb/drug_response_pipeline.git
+RUN python3 -m pip -q --timeout 1000 install git+https://gitlab.bio.di.uminho.pt/dlrsb/drug_response_pipeline.git
 
 RUN mkdir -p /scripts /data /results
 
