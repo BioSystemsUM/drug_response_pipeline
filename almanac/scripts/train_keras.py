@@ -12,8 +12,8 @@ from tensorflow.keras.utils import plot_model
 from src.dataset.data_generator import DataGenerator
 from src.dataset.dataset import MultiInputDataset
 from src.model_selection.model_selection import KerasRayTuneSearch
-from src.utils.utils import save_evaluation_results, plot_keras_history, get_dataset_dims
 from src.models import drug_pairs_build_functions
+from src.utils.utils import save_evaluation_results, plot_keras_history, get_dataset_dims
 
 
 def main(settings):
@@ -37,6 +37,13 @@ def main(settings):
     # Load data
     print('Loading data')
     if settings['use_data_generators']:
+        for key in ['train_drugA_filepath', 'train_drugB_filepath', 'train_expr_filepath', 'train_mut_filepath',
+                    'train_cnv_filepath', 'train_drugA_atom_feat_filepath', 'train_drugB_atom_feat_filepath',
+                    'train_drugA_adj_filepath', 'train_drugB_adj_filepath']:
+            if settings[key] is not None:
+                settings[key] = os.path.abspath(settings[key])
+                # doing this because numpy load with mmap_mode in DataGenerator is not finding the files when using relative paths
+
         train_dataset = DataGenerator(y_filepath=settings['train_response_filepath'],
                                       output_col='COMBOSCORE',
                                       drugA_filepath=settings['train_drugA_filepath'],
@@ -66,7 +73,7 @@ def main(settings):
         dataset_dims = train_dataset.get_dataset_dimensions(model_type=settings['model_type'])
 
     val_dataset = MultiInputDataset(settings['val_response_filepath'], id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-                                          output_col='COMBOSCORE')
+                                    output_col='COMBOSCORE')
     val_dataset.load_drugA(settings['val_drugA_filepath'])
     val_dataset.load_drugB(settings['val_drugB_filepath'])
     val_dataset.load_expr(settings['val_expr_filepath'])
@@ -112,7 +119,7 @@ def main(settings):
                                  callbacks=[EarlyStopping(patience=15, restore_best_weights=True),
                                             CSVLogger(os.path.join(output_dir, 'training.log'))],
                                  validation_data=(val_dataset.X_dict, val_dataset.y), workers=6,
-								 use_multiprocessing=False, validation_batch_size=64)
+                                 use_multiprocessing=False, validation_batch_size=64)
         train_dataset.delete_memmaps()
     else:
         history = best_model.fit(train_dataset.X_dict, train_dataset.y, epochs=settings['epochs'],
@@ -129,7 +136,7 @@ def main(settings):
     del train_dataset
     del val_dataset
     test_dataset = MultiInputDataset(settings['test_response_filepath'], id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-                                          output_col='COMBOSCORE')
+                                     output_col='COMBOSCORE')
     test_dataset.load_drugA(settings['test_drugA_filepath'])
     test_dataset.load_drugB(settings['test_drugB_filepath'])
     test_dataset.load_expr(settings['test_expr_filepath'])
