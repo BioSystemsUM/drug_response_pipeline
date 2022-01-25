@@ -173,9 +173,7 @@ dl_vs_ml_models = ['DL', 'ElasticNet', 'LinearSVR', 'Nystroem+LinearSVR', 'Rando
 				   'XGBoost', 'LGBM']
 ml_results['RMSE'] = ml_results['mean_squared_error'].apply(np.sqrt)
 ml_results = pd.concat([ml_results, dl_results[dl_results['model'] == '$expr_{DGI} + drugs_{ECFP4}$']], axis=0)
-print(ml_results)
 ml_results['model'].replace(to_replace='$expr_{DGI} + drugs_{ECFP4}$', value='DL', inplace=True)
-print(ml_results)
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 16))
 ax = [ax1, ax2, ax3, ax4]
 for i, metric in enumerate(set(metrics_aliases.values())):

@@ -61,7 +61,7 @@ def main(settings):
                                 output_dir=output_dir)
 
         tuner.search(n_configurations=50, hyperparam_space=opt_hyperparams, main_metric=settings['main_metric'],
-                     metric_mode=settings['main_metric_mode'], n_jobs=1, random_seed=12321) # random_seed is ignored when using BOHB though
+                     metric_mode=settings['main_metric_mode'], n_jobs=1, random_seed=12321)
         best_hyperparams = tuner.best_hyperparams
     else:
         print('Not optimizing hyperparameters')

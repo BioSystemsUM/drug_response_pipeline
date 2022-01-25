@@ -16,8 +16,8 @@ rf_feature_importance = rf_model.feature_importances_
 
 rf_df = pd.DataFrame(data={'Feature': feature_names, 'Importance': rf_feature_importance})
 rf_df.sort_values(by='Importance', ascending=False, inplace=True)
-rf_df.to_csv('results/rf_feature_importance.csv', index=False)
+rf_df.to_csv('../results/rf_feature_importance.csv', index=False)
 
 lgbm_df = pd.DataFrame(data={'Feature': feature_names, 'Importance': lgbm_feature_importance})
 lgbm_df.sort_values(by='Importance', ascending=False, inplace=True)
-lgbm_df.to_csv('results/lgbm_feature_importance.csv', index=False)
+lgbm_df.to_csv('../results/lgbm_feature_importance.csv', index=False)
