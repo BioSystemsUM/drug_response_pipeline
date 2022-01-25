@@ -269,7 +269,7 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 				scaler = getattr(preprocessing, scaler)
 			steps.append(scaler())
 
-		# steps.append(SimpleImputer(strategy='median')) # not necessary right now, but may be necessary if using an external test set
+		# steps.append(SimpleImputer(strategy='median')) # not necessary right now, but may be necessary
 
 		if reshape_conv1d:
 			steps.append(Conv1DReshaper())
@@ -347,7 +347,8 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 
 		self.dataset = self.dataset[cols_order]
 
-	def filter_genes(self, use_targets=False, use_landmark=False, use_cosmic=False, use_ncg=False, use_msigdb=False):
+	def filter_genes(self, use_targets=False, use_landmark=False, use_cosmic=False, use_ncg=False, use_msigdb=False,
+					 use_aliases=True):
 		# TODO: make this more general
 		selected = [self.id_col]
 
@@ -359,13 +360,12 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 			target_aliases = {'SEM1': 'SHFM1', 'C10ORF67': 'LINC01552', 'MAP3K20': 'ZAK', 'NSD2': 'WHSC1',
 							  'CYCSP5': 'HCP5'}
 			for gene in target_genes:
-				if gene in target_aliases:
+				if use_aliases and gene in target_aliases:
 					selected.append(target_aliases[gene])
 				else:
 					selected.append(gene)
 
 		if use_landmark:
-			print('using landmark genes')
 			path = 'filtering_files/lincs_landmark_list.txt'
 			filepath = pkg_resources.resource_filename(__name__, path)
 			with open(filepath, 'r') as f:
@@ -374,7 +374,7 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 								'CARMIL1': 'LRRC16A',
 								'MINDY1': 'FAM63A', 'WASHC4': 'KIAA1033', 'KIF1BP': 'KIAA1279'}
 			for gene in landmark_genes:
-				if gene in landmark_aliases:
+				if use_aliases and gene in landmark_aliases:
 					selected.append(landmark_aliases[gene])
 				else:
 					selected.append(gene)
@@ -394,7 +394,7 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 						   'ELOC': 'TCEB1', 'THAP12': 'PRKRIR', 'CNOT9': 'RQCD1', 'FYB2': 'C1orf168', 'RTL9': 'RGAG1',
 						   'MAP3K21': 'KIAA1804', 'PAK5': 'PAK7', 'ERBIN': 'ERBB2IP'}
 			for gene in ncg_genes:
-				if gene in ncg_aliases:
+				if use_aliases and gene in ncg_aliases:
 					selected.append(ncg_aliases[gene])
 				else:
 					selected.append(gene)
@@ -407,7 +407,7 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 			cosmic_aliases = {'MRTFA': 'MKL1', 'TENT5C': 'FAM46C', 'NSD3': 'WHSC1L1', 'WDCP': 'C2orf44',
 							  'LHFPL6': 'LHFP', 'AFDN': 'MLLT4', 'NSD2': 'WHSC1', 'KNL1': 'CASC5'}
 			for gene in cosmic_genes:
-				if gene in cosmic_aliases:
+				if use_aliases and gene in cosmic_aliases:
 					selected.append(cosmic_aliases[gene])
 				else:
 					selected.append(gene)
@@ -437,7 +437,7 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 		genes_names_not_in_df = list(set(selected).difference(set(self.dataset.columns.tolist())))
 		hgnc_df = hgnc_df[hgnc_df.isin(genes_names_not_in_df).any(axis=1)]
 		genes_previous_symbols = hgnc_df['Previous symbol'].dropna(axis=0).tolist()
-		selected.extend(genes_previous_symbols) # TODO: see if we can eliminate the alias dicts by doing this instead (check if all aliases are previous symbols)
+		selected.extend(genes_previous_symbols)
 		selected = list(set(selected))
 
 		self.dataset = self.dataset.loc[:, self.dataset.columns.isin(selected)]
@@ -499,7 +499,6 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 			ensembl_df.drop_duplicates(subset=['Gene Synonym'], keep='first'), left_on='Gene', right_on='Gene Synonym')
 		positions_df = pd.concat([df1, df2, df3], axis=0)
 		missing = list(set(omics_genes).difference(set(positions_df['Gene'].tolist())))
-		#print(missing)  # ['PRAMEF16', 'BAGE', 'C18orf61', 'PGBD3', 'GAGE2D', 'BAGE4', 'BAGE5', 'KIAA1107', 'C10orf126', 'OCLM', 'C9orf47', 'PRR25', 'PANO1', 'GAGE12I', 'KIAA0754', 'MICALCL', 'GAGE2B']
 		missing_df = genes_df[genes_df['Gene'].isin(missing)]
 		positions_df = pd.concat([positions_df, missing_df], axis=0)
 		positions_df['Chromosome'].fillna(positions_df['Chromosome/scaffold name'], inplace=True)
