@@ -13,7 +13,13 @@ dataset) can be downloaded from https://nextcloud.bio.di.uminho.pt/s/p5RXgkQwH5H
 This repository also contains the fully preprocessed drug and gene expression data required to run the 
 expr<sub>DGI</sub> + drugs<sub>ECFP4</sub> model described in our study.  
 
-## Scripts
+## Running the scripts
+Use the following command to start a Docker container: 
+```bash
+docker run --privileged -it --rm -v ~/drug_response_pipeline/almanac/data:/home/data -v ~/drug_response_pipeline/almanac/results:/home/results -v ~/drug_response_pipeline/almanac/scripts:/home/scripts drpred_tool
+``` 
+The scripts provided here can then be run inside this container. 
+
 The original drug response and omics files from CellMinerCDB and CBioportal can be preprocessed by running the *preprocess_almanac.py* script.
 
 The fully preprocessed and split drugA and drugB files can be created by running the *create_drug_files.py* script and 
@@ -44,7 +50,7 @@ Our SHAP analysis was performed using the *interpret_almanac_model.py* script.
 ## Results
 The 'results' folder contains the full results tables (with results for several scoring metrics and information on the 
 tuned hyperparameters), the plots that were generated from these tables, and the results from the SHAP analysis, 
-including the saved Explanation object and a CSV file containing the calculated SHAP values.
+including a CSV file containing the calculated SHAP values.
 
 Note: In our results files, the drug-gene interactions (DGI) that were used to filter the omics files were originally 
 called "targets". 
