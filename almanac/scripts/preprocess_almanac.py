@@ -13,20 +13,18 @@ from src.preprocessing.preprocessing import DatasetPreprocessor
 sys.setrecursionlimit(1000000)
 
 
-def preprocess_almanac_cellminercdb(output_path, remove_duplicate_triples=False):
+def preprocess_almanac_cellminercdb(output_path, remove_duplicate_triplets=False):
 	df = pd.read_table('../data/CellminerCDB/data_NCI60-DTP Almanac_act.txt').drop(['MOA', 'CLINICAL.STATUS'], axis=1)
-	df.rename(columns=lambda x: x.split(':')[-1], inplace=True)  # rename columns
+	df.rename(columns=lambda x: x.split(':')[-1], inplace=True)
 	df = df.melt(id_vars=['ID', 'NAME'], var_name='CELLNAME',
 	             value_name='COMBOSCORE')  # convert from wide to long format
-	# print(df.shape) # (332010, 4)
 	df.dropna(axis=0,
 	          inplace=True)  # this also removes the MDA-N cell line which was all NAs and is not part of the original ALMANAC dataset
 	# The MDA-MB-468 cell line that's present in the ALMANAC dataset doesn't appear in the CellMinerCDB dataset
-	# print(df.shape) # (317075, 4)
 
-	# Check for duplicate cell line-drugA-drugB triples and inverted duplicates (drug order is reversed -
+	# Check for duplicate cell line-drugA-drugB triplets and inverted duplicates (drug order is reversed -
 	#  cell line-drugB-drugA) and use average values instead
-	if remove_duplicate_triples:
+	if remove_duplicate_triplets:
 		unique_ids = df['ID'].unique().tolist()
 		ids_to_groups_mapper = {}
 		for id in unique_ids:
@@ -37,11 +35,9 @@ def preprocess_almanac_cellminercdb(output_path, remove_duplicate_triples=False)
 				ids_to_groups_mapper[id] = id
 		df['GROUP'] = df['ID'].apply(
 			lambda x: ids_to_groups_mapper[x])  # GROUP = the drug combination independent of drug order
-		# df['GROUP_CELLNAME'].duplicated(keep=False).sum() # 13560 triples with the same cell line + drug combination,
-		# but with the reverse drug order
 		df_duplicates = df[df.duplicated(subset=['GROUP', 'CELLNAME'],
-		                                 keep=False)]  # 12828 triples with the same cell line + drug combination, but with the reverse drug order
-		df_duplicates.to_csv('duplicate_triples_reversed_order_drugs.csv')
+		                                 keep=False)]  # 12828 triplets with the same cell line + drug combination, but with the reverse drug order
+		#df_duplicates.to_csv('duplicate_triples_reversed_order_drugs.csv')
 		df_duplicates_avg = df_duplicates.groupby(['GROUP', 'CELLNAME'],
 		                                          as_index=False).mean()  # calculate average COMBOSCORE of the multiple cell line-treatment experiments
 		df_duplicates_avg['ID'] = df_duplicates_avg['GROUP']
@@ -57,6 +53,7 @@ def preprocess_almanac_cellminercdb(output_path, remove_duplicate_triples=False)
 	# use pubchempy to get missing SMILES
 	compound_names_df = pd.read_table('../data/ALMANAC/ComboCompoundNames_small.txt', header=None,
 	                                  names=['nsc', 'name'])
+	sdf_df = sdf_df[~sdf_df['NSC'].isin(['119875', '266046', '753082'])] # because if we're using a newer version of RDKit, LoadSDF might read the compounds that it wasn't reading when I ran this before
 	for nsc in [119875, 266046, 753082]:
 		new_row = {k: np.nan for k in sdf_df.columns.tolist()}
 		new_row['NSC'] = str(nsc)
@@ -81,7 +78,6 @@ def preprocess_almanac_cellminercdb(output_path, remove_duplicate_triples=False)
 	df = df.merge(sdf_df, how='left', left_on='NSC2', right_on='NSC')
 	df.rename(columns={'smiles': 'SMILES_B'}, inplace=True)
 	df.drop(['NSC_x', 'NSC_y'], axis=1, inplace=True)
-
 	df.to_csv(output_path, index=False)
 
 
@@ -320,16 +316,24 @@ def extract_smiles_for_mtembeddings():
 
 
 if __name__ == '__main__':
+	# Preprocess response dataset:
 	preprocess_almanac_cellminercdb(output_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv',
-	                                remove_duplicate_triples=True)
+	                                remove_duplicate_triplets=True)
+	# Mutations, gene-level:
 	preprocess_mut(pathway_level=False, pathway_counts=False, output_path='../data/nci_almanac_preprocessed/omics/unmerged/mut_gene_level_binarized.csv')
+	# Mutations, pathway-level:
+	preprocess_mut(pathway_level=True, pathway_counts=False, output_path='../data/nci_almanac_preprocessed/omics/unmerged/mut_pathway_level_binarized.csv')
+	# CNVs:
 	preprocess_cnvs_gistic(prot_coding_only=True, output_path='../data/nci_almanac_preprocessed/omics/unmerged/cnvs_gistic_prot_coding.csv')
+	# Expression data (all genes):
+	preprocess_expr_rnaseq(prot_coding_only=False, output_path='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_all.csv')
+	# Expression data (protein coding only):
 	preprocess_expr_rnaseq(prot_coding_only=True, output_path='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_prot_coding.csv')
 	# Split drug response dataset into train/validation/test datasets and save:
 	response_data_preprocessor = DatasetPreprocessor(
-		dataset_filepath='../data/nci_almanac_preprocessed/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv')
+		dataset_filepath='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv')
 	response_data_preprocessor.split(
-		split_inds_file='../data/splits/almanac/data/splits/train_val_test_groups_split_inds_12321.pkl')
+		split_inds_file='../data/splits/train_val_test_groups_split_inds_12321.pkl')
 	response_data_preprocessor.save_split_datasets(output_dir='../data/nci_almanac_preprocessed/response',
 	                                               output_name='almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples',
 	                                               output_format='.csv.gz')

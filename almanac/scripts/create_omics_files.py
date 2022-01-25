@@ -1,13 +1,20 @@
 import argparse
+import sys
 
 from src.preprocessing.preprocessing import OmicsDatasetPreprocessor
+
+sys.setrecursionlimit(1000000)
 
 
 def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork_type):
 	id_col = 'CELLNAME'
 	if expr_subnetwork_type is not None:
+		if 'protein coding' in expr_subnetwork_type or 'WGCNA' in expr_subnetwork_type or 'UMAP' in expr_subnetwork_type:
+			dataset_file = '../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_prot_coding.csv'
+		else:
+			dataset_file = '../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_all.csv'
 		omics_preprocessor = OmicsDatasetPreprocessor(
-			dataset_filepath='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_prot_coding.csv',
+			dataset_filepath=dataset_file,
 			id_col='CELLNAME')
 
 		subnetwork_type_to_output_names = {'expr (landmark)': 'rnaseq_fpkm_landmark_minmaxscaled',
@@ -69,7 +76,10 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 		elif expr_subnetwork_type == 'expr (protein coding, clustering order 2D CNN)' or expr_subnetwork_type == 'expr (protein coding, chromosome position order 2D CNN)':
 			omics_preprocessor.preprocess_split_datasets(scaler='MinMaxScaler', reshape_conv2d=True, conv_2d_shape=138)
 		elif expr_subnetwork_type == 'expr (WGCNA)':
-			pass # not scaling here, just going to save merged and split dataset to pass on to the R script
+			omics_preprocessor.save_split_datasets(output_dir='../data/nci_almanac_preprocessed/omics/split',
+												   output_name=subnetwork_type_to_output_names[expr_subnetwork_type],
+												   output_format='.csv.gz',
+												   drop_id=False) # not scaling here, just going to save merged and split dataset to pass on to the R script
 		else: # for the remaining expr options, just scale the data
 			omics_preprocessor.preprocess_split_datasets(scaler='MinMaxScaler')
 
@@ -101,7 +111,7 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 		if cnv_subnetwork_type == 'cnv (DGI)':
 			cnv_preprocessor = OmicsDatasetPreprocessor(dataset_filepath='../data/nci_almanac_preprocessed/omics/unmerged/cnvs_gistic_prot_coding.csv',
 			                                            id_col=id_col)
-			cnv_preprocessor.filter_genes(use_targets=True)
+			cnv_preprocessor.filter_genes(use_targets=True, use_aliases=False) # use_aliases = False because I didn't use them originally
 			cnv_preprocessor.save_full_dataset(output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/cnvs_gistic_target_genes.csv')
 			cnv_preprocessor.merge(dataset_to_merge_filepath='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv')
 			cnv_preprocessor.split('../data/splits/train_val_test_groups_split_inds_12321.pkl')
