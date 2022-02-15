@@ -7,6 +7,21 @@ sys.setrecursionlimit(1000000)
 
 
 def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork_type):
+	"""
+	Preprocess omics data for ALMANAC cell lines and save to file.
+
+	Parameters
+	----------
+	expr_subnetwork_type: str
+		The type of expression feature-encoding subnetwork that will be used (determines which preprocessing steps
+		will be applied).
+	mut_subnetwork_type: str
+		The type of mutation feature-encoding subnetwork that will be used (determines which preprocessing steps
+		will be applied).
+	cnv_subnetwork_type: str
+		The type of copy number variation (CNV) feature-encoding subnetwork that will be used (determines which
+		preprocessing steps will be applied).
+	"""
 	id_col = 'CELLNAME'
 	if expr_subnetwork_type is not None:
 		if 'protein coding' in expr_subnetwork_type or 'WGCNA' in expr_subnetwork_type or 'UMAP' in expr_subnetwork_type:
@@ -122,7 +137,7 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Featurize ALMANAC drugs and save to file')
+	parser = argparse.ArgumentParser(description='Preprocess omics datasets and save to file')
 	parser.add_argument('-e',
 	                    '--expr-subnetwork-type',
 	                    type=str,

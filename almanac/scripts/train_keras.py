@@ -17,6 +17,15 @@ from src.utils.utils import save_evaluation_results, plot_keras_history, get_dat
 
 
 def main(settings):
+    """
+    Train and evaluate deep learning models on data from the ALMANAC drug combination screen.
+
+    Parameters
+    ----------
+    settings: dict
+        Dictionary with user-defined settings and model configurations.
+
+    """
     if 'gpu_to_use' in settings:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(settings['gpu_to_use'])[1:-1]
         print(os.environ['CUDA_VISIBLE_DEVICES'])

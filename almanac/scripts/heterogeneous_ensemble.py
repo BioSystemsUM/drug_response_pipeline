@@ -12,6 +12,9 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
 def run_ensemble(model_description, output_file):
+	"""Evaluate a heterogeneous ensemble model comprising the top 10 deep learning models + the LightGBM, XGBoost and
+	RF models developed in our study."""
+
 	print('loading test data')
 	dgi_ecfp4_test_dataset = MultiInputDataset(
 		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
@@ -119,7 +122,7 @@ def run_ensemble(model_description, output_file):
 	paths_to_saved_models = ['../results/2021-07-06_12-19-03/train_set_model.h5',  # DL (expr (DGI) + drugs (ECFP4)
 	                         '../results/2021-07-06_12-02-29/train_set_model.h5', # DL (expr (landmark) + drugs (ECFP4)
 	                         '../results/2021-07-06_12-12-35/train_set_model.h5', # DL (expr (COSMIC) + drugs (ECFP4)
-	                         '../results/2021-09-09_15-05-24/train_set_model', # DL (expr (target genes, dense, MinMaxScaler) + mut (pathway-level, target genes) + cnv (GISTIC, target genes) + drug (ECFP4, Dense))
+	                         '../results/2021-09-09_15-05-24/train_set_model', # DL (expr (DGI) + mut (pathway-level) + cnv (DGI) + drug (ECFP4)
 	                         '../results/2021-07-13_20-03-54/train_set_model', # LayeredFP
 	                         '../results/2021-07-13_15-43-50/train_set_model', # MTE
 	                         '../results/2021-07-06_12-21-29/train_set_model.h5', # NCG

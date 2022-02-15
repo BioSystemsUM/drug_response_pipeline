@@ -1,7 +1,8 @@
 import os
 
 from tensorflow import keras
-#tf.compat.v1.disable_v2_behavior() # https://github.com/slundberg/shap/issues/1055#issuecomment-708504795 and https://github.com/slundberg/shap/issues/1286
+import tensorflow as tf
+tf.compat.v1.disable_v2_behavior() # https://github.com/slundberg/shap/issues/1055#issuecomment-708504795 and https://github.com/slundberg/shap/issues/1286
 import numpy as np
 import pandas as pd
 
@@ -17,6 +18,7 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
 def shap_analysis():
+    """Perform a SHAP analysis for the expr (DGI) + drugs (ECFP4) model"""
     print('loading training data')
     train_dataset = MultiInputDataset(response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_train.csv.gz',
                                       id_cols=['CELLNAME', 'NSC1', 'NSC2'],

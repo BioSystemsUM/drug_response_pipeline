@@ -7,6 +7,7 @@ from src.utils.utils import save_evaluation_results
 
 
 def get_baseline_results(output_filepath='../results/model_evaluation_results_cellminercdb.csv'):
+    """Calculate performance scores for a baseline model that always predicts the mean of the training set"""
     train_dataset = MultiInputDataset(
         '../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_train.csv.gz',
         'COMBOSCORE')

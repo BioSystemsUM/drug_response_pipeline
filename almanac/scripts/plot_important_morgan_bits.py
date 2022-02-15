@@ -2,6 +2,7 @@ from src.utils.utils import plot_morgan_bits
 
 
 def plot_important_bits():
+    """Plot the most important 'ON' bits for test set sample 11835"""
     plot_morgan_bits(smiles_file='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
                      smiles_col='SMILES_A',
                      sample_id=11835,

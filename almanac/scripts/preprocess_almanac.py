@@ -14,6 +14,21 @@ sys.setrecursionlimit(1000000)
 
 
 def preprocess_almanac_cellminercdb(output_path, remove_duplicate_triplets=False):
+	"""
+	Preprocess the ALMANAC drug response data from CellMinerCDB. Removes cell lines with missing data, gets SMILES
+	strings for each drug and standardizes the compounds using the ChEMBL Structure Pipeline.
+
+	Parameters
+	----------
+	output_path:
+		Path to the file where the preprocessed response dataset will be saved.
+	remove_duplicate_triplets: bool
+		Whether to remove duplicate cell line-drugA-drugB triplets
+
+	Returns
+	-------
+	None
+	"""
 	df = pd.read_table('../data/CellminerCDB/data_NCI60-DTP Almanac_act.txt').drop(['MOA', 'CLINICAL.STATUS'], axis=1)
 	df.rename(columns=lambda x: x.split(':')[-1], inplace=True)
 	df = df.melt(id_vars=['ID', 'NAME'], var_name='CELLNAME',
@@ -82,6 +97,26 @@ def preprocess_almanac_cellminercdb(output_path, remove_duplicate_triplets=False
 
 
 def preprocess_mut(pathway_level=False, pathway_counts=False, output_path=None):
+	"""
+	Preprocess mutation data for the NCI-60 cell lines used in the ALMANAC study. Removes silent mutations,
+	binarizes mutations per gene and summarizes the data at the pathway-level if the pathway_level option is set."
+
+	Parameters
+	----------
+	pathway_level: bool
+		Summarize mutations at the pathway level instead of gene level.
+	pathway_counts: bool
+		Use counts to summarize mutations at the pathway level, counting each time a mutation occurs in a gene
+		belonging to a given pathway, instead of using binary values to indicate the presence/absence of mutated genes
+		belonging to a given pathway.
+	output_path: str
+		Path to the file where the preprocessed mutation data will be saved.
+
+	Returns
+	-------
+	preprocessed_df: DataFrame
+		The preprocessed mutation data.
+	"""
 	cols_to_use = ['Hugo_Symbol', 'Consequence', 'Variant_Classification', 'Variant_Type', 'Tumor_Sample_Barcode',
 	               'CLIN_SIG', 'VARIANT_CLASS', 'GENE_PHENO', 'MA:FImpact', 'SIFT', 'GMAF', 'IMPACT', 'PolyPhen',
 	               'FILTER']
@@ -124,7 +159,6 @@ def preprocess_mut(pathway_level=False, pathway_counts=False, output_path=None):
 	binarized_df = mut_df.reset_index().groupby(['CELLNAME', 'Hugo_Symbol'])['value'].aggregate(
 		'first').unstack().fillna(0)
 	binarized_df.columns.name = None
-	# 7818 genes
 
 	if pathway_level:
 		with open('../data/msigdb_c2.cp.reactome.v7.2.symbols.gmt', 'r') as f:
@@ -164,6 +198,21 @@ def preprocess_mut(pathway_level=False, pathway_counts=False, output_path=None):
 
 
 def preprocess_cnvs_gistic(prot_coding_only=False, output_path=None):
+	"""
+	Preprocess copy number variation (CNV) data (GISTIC scores) for the NCI-60 cell lines used in the ALMANAC study.
+
+	Parameters
+	----------
+	prot_coding_only: bool
+		Whether to only keep protein coding genes.
+	output_path: str
+		Path to the file where the preprocessed CNV data will be saved.
+
+	Returns
+	-------
+	None
+
+	"""
 	cnv_df = pd.read_table('../data/cbioportal_nci60/data_CNA.txt', header=0).drop('Entrez_Gene_Id', axis=1).set_index(
 		'Hugo_Symbol').T
 	cnv_df.columns.name = None
@@ -197,8 +246,28 @@ def preprocess_cnvs_gistic(prot_coding_only=False, output_path=None):
 
 def preprocess_expr_rnaseq(expr_dataset_path='../data/CellminerCDB/data_nci60_xsq.txt', convert_to_tpm=False,
                            prot_coding_only=False, output_path=None):
+	"""
+	Preprocess RNA-Seq data (log2(FPKM+1)) for the NCI-60 cell lines used in the ALMANAC study.
+
+	Parameters
+	----------
+	expr_dataset_path: str
+		Path to the expression dataset file.
+	convert_to_tpm: bool
+		Whether to convert the log2(FPKM+1) values to log2(TPM+1).
+	prot_coding_only: bool
+		Whether to use protein coding genes only.
+	output_path: str
+		Path to the file where the preprocessed expression data will be saved.
+
+	Returns
+	-------
+	expr_df: DataFrame
+		The preprocessed expression data.
+
+	"""
 	expr_df = pd.read_table(expr_dataset_path, header=0)
-	# RNA-seq composite log2 FPKM+1 (in the original paper they sometimes say +0.1 and sometimes they say +1)
+	# RNA-seq composite log2 FPKM+1
 
 	response_df = pd.read_csv(
 		'../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv',
@@ -214,7 +283,7 @@ def preprocess_expr_rnaseq(expr_dataset_path='../data/CellminerCDB/data_nci60_xs
 	expr_df.rename(columns=lambda x: x.split(':')[-1], inplace=True)
 	expr_df.index.name = None
 	expr_df = expr_df[cell_lines]
-	expr_df = expr_df.T  # shape = [60 rows x 23826 columns]
+	expr_df = expr_df.T
 
 	if prot_coding_only:  # keep only protein-coding genes
 		prot_coding_df = pd.read_table('../data/hgnc_symbol_prot_coding.txt', header=0)
@@ -248,6 +317,7 @@ def preprocess_expr_rnaseq(expr_dataset_path='../data/CellminerCDB/data_nci60_xs
 
 
 def get_drug_gene_interactions():
+	"""Get the drug-gene interactions for the compounds in ALMANAC."""
 	train_response_df = pd.read_csv(
 		'../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_train.csv.gz')
 	compound_names_df = pd.read_table('../data/ALMANAC/ComboCompoundNames_small.txt', header=None,
@@ -266,7 +336,7 @@ def get_drug_gene_interactions():
 	                "4'-EPIADRIAMYCIN": 'EPIRUBICIN',
 	                'SUNITINIB (FREE BASE)': 'SUNITINIB'}
 	compound_names_df['name'].replace(compound_map, inplace=True)
-	interactions_df = pd.read_table('../interactions.tsv')
+	interactions_df = pd.read_table('../interactions.tsv') # file from DGIdb
 	almanac_interactions_df = compound_names_df.merge(interactions_df, left_on='name', right_on='drug_name',
 	                                                  how='left')  # creates multiple entries for each nsc
 	# remove rows without gene_name
@@ -288,6 +358,7 @@ def get_drug_gene_interactions():
 
 
 def one_hot_encode_labels(response_dataset_path, output_dir):
+	"""One-hot encodes cell line and drug names"""
 	df = pd.read_csv(response_dataset_path)
 	onehot_cells = pd.get_dummies(df['CELLNAME'])
 	onehot_drugA = pd.get_dummies(df['NSC1'], prefix='NSC')

@@ -11,13 +11,16 @@ def create_LDCO_splits_cellminercdb(random_seed, output_path):
     gkf = GroupKFold(n_splits=10)
     np.random.seed(seed=random_seed)
     groups = df['GROUP'].tolist()
-    np.random.shuffle(groups)
+    np.random.shuffle(groups) # this step just changes the order of the groups and not the samples themselves, so the wrong groups are being passed to GroupKFold!!!
+    # with the line above this ends up being just like a random split!!!
     split_inds_folds = list(gkf.split(X=df, groups=groups))
     test_inds = split_inds_folds[0][1].tolist()
     val_inds = split_inds_folds[1][1].tolist()
     train_inds = []
     for i in range(2, 10):
         train_inds.extend(split_inds_folds[i][1].tolist())
+    test_df = df.loc[test_inds, 'GROUP']
+    val_df = df.loc[val_inds, 'GROUP']
     # print(len(test_inds)) # 30001
     # print(len(val_inds)) # 30007
     # print(len(train_inds)) # 239943

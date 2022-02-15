@@ -10,9 +10,29 @@ from src.dataset.data_generator import DataGenerator
 
 
 class KerasRayTuneSearch(object):
+    """Tune hyperparameters using the Ray Tune implementation of Bayesian Optimization Hyperband (BOHB).
+    BOHB uses Bayesian optimization to optimize the hyperparameters and Hyperband to early-stop bad trials."""
 
     def __init__(self, model_build_function, training_dataset, validation_dataset, epochs, n_gpus, output_dir,
                  batch_size):
+        """
+        Parameters
+        ----------
+        model_build_function: callable
+            Function used to build the model.
+        training_dataset: MultiInputDataset or DataGenerator object
+            The multi-input training dataset.
+        validation_dataset: MultiInputDataset object
+            The multi-input validation dataset.
+        epochs: int
+            The number of epochs.
+        n_gpus: int
+            The number of GPUs to use.
+        output_dir: str
+            The output directory where the results of the hyperparameter search will be saved.
+        batch_size: int
+            The batch size.
+        """
         ray.shutdown()
         ray.init(num_cpus=1, num_gpus=n_gpus, log_to_driver=False, _lru_evict=True)
         self.build_fn = model_build_function
@@ -35,6 +55,7 @@ class KerasRayTuneSearch(object):
         self.best_hyperparams = None
 
     def _run_experiment(self, config):
+        """Create a model with the provided hyperparameter configuration and train it."""
         strategy = tf.distribute.MirroredStrategy()
         with strategy.scope():
             model = self.build_fn(**config)
@@ -59,9 +80,33 @@ class KerasRayTuneSearch(object):
                       callbacks=callbacks,
                       validation_batch_size=64)
 
-
     def search(self, n_configurations, hyperparam_space, main_metric, metric_mode, n_cpus_per_trial, n_gpus_per_trial,
                random_seed):
+        """
+        Tune the hyperparameters.
+
+        Parameters
+        ----------
+        n_configurations: int
+            Number of hyperparameter configurations to test.
+        hyperparam_space: dict
+            The search space.
+        main_metric: str
+            The main scoring metric (used to determine the best configuration).
+        metric_mode: str
+            Whether to maximize ('max') or minimize ('min') the main scoring metric.
+        n_cpus_per_trial: int
+            Number of CPUs allowed per trial.
+        n_gpus_per_trial: int
+            Number of GPUs allowed per trial.
+        random_seed: int
+            Seed to initialize the random number generator.
+
+        Returns
+        -------
+        results: DataFrame
+            The results of the hyperparameter optimization run.
+        """
         np.random.seed(random_seed)
         bohb_hyperband = ray.tune.schedulers.HyperBandForBOHB(time_attr='training_iteration',
                                                               max_t=100,
@@ -81,5 +126,3 @@ class KerasRayTuneSearch(object):
         results.to_csv(os.path.join(self.output_dir, 'ray_tune_results.csv'), index=False)
 
         return results
-
-

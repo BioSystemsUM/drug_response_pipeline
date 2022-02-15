@@ -5,6 +5,14 @@ from src.utils.utils import build_char_dict
 
 
 def create_drug_files(featurization_type):
+	"""
+	Featurize ALMANAC drugs.
+
+	Parameters
+	----------
+	featurization_type: str
+		The featurization method that will be applied.
+	"""
 	drugA_preprocessor = DrugDatasetPreprocessor(
 		dataset_filepath='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv',
 		id_col='NSC1',

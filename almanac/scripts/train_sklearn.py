@@ -18,6 +18,15 @@ from src.utils.utils import save_evaluation_results, get_ml_algorithm, evaluate_
 
 
 def main(settings):
+    """
+    Train and evaluate traditional machine learning models on data from the ALMANAC drug combination screen.
+
+    Parameters
+    ----------
+    settings: dict
+        Dictionary with user-defined settings and model configurations.
+
+    """
     # make output_dir
     output_dir = os.path.join('../results/', datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
     os.makedirs(output_dir)
