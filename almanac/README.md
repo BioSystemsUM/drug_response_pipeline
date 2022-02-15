@@ -53,7 +53,10 @@ tuned hyperparameters), the plots that were generated from these tables, and the
 including a CSV file containing the calculated SHAP values.
 
 Note: In our results files, the drug-gene interactions (DGI) that were used to filter the omics files were originally 
-called "targets". 
+called "targets". In addition, in the original results table the description for the model trained on mutations 
+summarized at the pathway level ("expr(target genes, dense, MinMaxScaler) + mut (pathway-level, target genes) + cnv 
+(GISTIC, target genes) + drug (ECFP4, Dense)") mistakenly refers target genes after pathway-level, but the pathway-level 
+mutation data were not filtered using the DGI (targets) gene list.
 
 ## Trained models
 Our trained models can be downloaded from https://nextcloud.bio.di.uminho.pt/s/Tj2NT2kMGKXtZaq
