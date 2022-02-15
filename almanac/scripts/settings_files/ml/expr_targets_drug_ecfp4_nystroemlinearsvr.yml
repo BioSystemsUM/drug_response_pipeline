@@ -6,9 +6,9 @@ scoring_metrics:
 - r2_score
 - mean_squared_error
 - pearson
-model_description: SVR - expr (target genes (all interactions)) + drug (ECFP4)
-model_type: SVR 
-opt_hyperparams_path: settings_files/ml/svr_hyperparam_space.pkl
+model_description: Nystroem + LinearSVR - expr (target genes (all interactions)) + drug (ECFP4)
+model_type: Nystroem+LinearSVR 
+opt_hyperparams_path: settings_files/ml/nystroemlinearsvr_hyperparam_space.pkl
 test_cnv_filepath: null
 test_drugA_adj_filepath: null
 test_drugA_atom_feat_filepath: null
