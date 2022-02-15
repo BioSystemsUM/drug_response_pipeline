@@ -20,12 +20,15 @@ from shap import Explanation, Cohorts
 
 def bar(shap_values, max_display=10, order=Explanation.abs, clustering=None, clustering_cutoff=0.5,
         merge_cohorts=False, show_data="auto", show=True):
-	""" Create a bar plot of a set of SHAP values.
+	"""
+	Modified version of https://github.com/slundberg/shap/blob/master/shap/plots/_bar.py - removes grouped features
+	from the plot.
+
+	Create a bar plot of a set of SHAP values.
 
 	If a single sample is passed then we plot the SHAP values as a bar chart. If an
 	Explanation with many samples is passed then we plot the mean absolute value for
 	each feature column as a bar chart.
-
 
 	Parameters
 	----------
@@ -331,13 +334,18 @@ def bar(shap_values, max_display=10, order=Explanation.abs, clustering=None, clu
 		pl.show()
 
 def waterfall(shap_values, max_display=10, show=True):
-	""" Plots an explantion of a single prediction as a waterfall plot.
+	"""
+	Modified version of https://github.com/slundberg/shap/blob/master/shap/plots/_waterfall.py - changed code so that
+	the SHAP values will always be placed outside of the arrows
+
+	Plots an explantion of a single prediction as a waterfall plot.
 	The SHAP value of a feature represents the impact of the evidence provided by that feature on the model's
 	output. The waterfall plot is designed to visually display how the SHAP values (evidence) of each feature
 	move the model output from our prior expectation under the background data distribution, to the final model
 	prediction given the evidence of all the features. Features are sorted by the magnitude of their SHAP values
 	with the smallest magnitude features grouped together at the bottom of the plot when the number of features
 	in the models exceeds the max_display parameter.
+
 
 	Parameters
 	----------
@@ -639,7 +647,11 @@ def beeswarm(shap_values, max_display=10, order=Explanation.abs.mean(0),
              clustering=None, cluster_threshold=0.5, color=None,
              axis_color="#333333", alpha=1, show=True, log_scale=False,
              color_bar=True, plot_size="auto", color_bar_label=labels["FEATURE_VALUE"]):
-	"""Create a SHAP beeswarm plot, colored by feature values when they are provided.
+	"""
+	Modified version of https://github.com/slundberg/shap/blob/master/shap/plots/_beeswarm.py - removes grouped
+	features from the plot.
+
+	Create a SHAP beeswarm plot, colored by feature values when they are provided.
 
 	Parameters
 	----------
@@ -1015,8 +1027,6 @@ def is_color_map(color):
 	safe_isinstance(color, "matplotlib.colors.Colormap")
 
 
-# TODO: remove unused title argument / use title argument
-# TODO: Add support for hclustering based explanations where we sort the leaf order by magnitude and then show the dendrogram to the left
 def summary_legacy(shap_values, features=None, feature_names=None, max_display=None, plot_type=None,
                    color=None, axis_color="#333333", title=None, alpha=1, show=True, sort=True,
                    color_bar=True, plot_size="auto", layered_violin_max_num_bins=20, class_names=None,
@@ -1026,7 +1036,9 @@ def summary_legacy(shap_values, features=None, feature_names=None, max_display=N
                    # depreciated
                    auto_size_plot=None,
                    use_log_scale=False):
-	"""Create a SHAP beeswarm plot, colored by feature values when they are provided.
+	"""
+
+	Create a SHAP beeswarm plot, colored by feature values when they are provided.
 
 	Parameters
 	----------

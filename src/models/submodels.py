@@ -2,6 +2,7 @@ from ast import literal_eval
 
 from deepchem.models.layers import Highway, DTNNEmbedding
 from spektral.layers import GCNConv, GlobalSumPool, GATConv
+import tensorflow as tf
 from tensorflow import math
 from tensorflow.keras.applications import DenseNet121
 from tensorflow.keras.layers import Input, Dense, Dropout, BatchNormalization, Activation, \
@@ -14,6 +15,8 @@ from tensorflow.python.keras.layers.advanced_activations import LeakyReLU, PReLU
 
 def drug_dense_submodel(input_dim, hlayers_sizes='[10]', l1_regularization=0, l2_regularization=0,
                         hidden_activation='relu', input_dropout=0, hidden_dropout=0):
+	"""Build a dense (fully-connected) submodel for drugs, so that it can be used later on to share weights
+	between two drug subnetworks."""
 	input_layer = Input(shape=input_dim)
 
 	output = dense_submodel(input_layer, hlayers_sizes, l1_regularization, l2_regularization,
@@ -26,6 +29,7 @@ def drug_dense_submodel(input_dim, hlayers_sizes='[10]', l1_regularization=0, l2
 
 def dense_submodel(input_layer, hlayers_sizes='[10]', l1_regularization=0, l2_regularization=0,
                    hidden_activation='relu', input_dropout=0, hidden_dropout=0):
+	"""Build a dense (fully-connected) subnetwork."""
 	hlayers_sizes = literal_eval(hlayers_sizes)  # because hlayers_sizes was passed as a string
 
 	if hidden_activation == 'selu':
@@ -66,7 +70,10 @@ def textcnn_submodel(seq_length, char_dict, n_embedding=75,
                      kernel_sizes='[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]',
                      num_filters='[100, 200, 200, 200, 200, 100, 100, 100, 100, 100, 160, 160]',
                      l1=0, l2=0, dropout=0.25):
-	# adapted from https://github.com/deepchem/deepchem/blob/master/deepchem/models/text_cnn.py
+	"""Build a TextCNN subnetwork.
+
+	Adapted from https://github.com/deepchem/deepchem/blob/master/deepchem/models/text_cnn.py
+	"""
 	input_layer = Input(shape=(seq_length,), dtype=tf.int32, name='drug')
 
 	kernel_sizes = literal_eval(kernel_sizes)
@@ -103,6 +110,7 @@ def textcnn_submodel(seq_length, char_dict, n_embedding=75,
 
 def conv1d_submodel(input_layer, num_filters='[32, 32]', kernel_sizes='[2, 2]', pool_size=2,
                     initializer='glorot_uniform', hidden_activation='relu', l1=0, l2=0, batchnorm=True):
+	"""Build a 1D CNN subnetwork."""
 	kernel_sizes = literal_eval(kernel_sizes)
 	num_filters = literal_eval(num_filters)
 	kernel_regularizer = l1_l2(l1=l1, l2=l2)
@@ -132,6 +140,7 @@ def conv1d_submodel(input_layer, num_filters='[32, 32]', kernel_sizes='[2, 2]', 
 
 def conv2d_submodel(input_layer, num_filters='[32, 32]', kernel_size=(3, 3), pool_size=(2, 2),
                     initializer='glorot_uniform', hidden_activation='relu', batchnorm=True):
+	"""Build a 2D CNN subnetwork."""
 	num_filters = literal_eval(num_filters)
 
 	x = input_layer
@@ -157,6 +166,7 @@ def conv2d_submodel(input_layer, num_filters='[32, 32]', kernel_size=(3, 3), poo
 
 
 def densenet_submodel(input_layer):
+	"""Build a DenseNet submodel."""
 	model = DenseNet121(include_top=False, input_tensor=input_layer, pooling='avg')
 
 	x = model(input_layer)
@@ -166,7 +176,7 @@ def densenet_submodel(input_layer):
 
 def gcn_submodel(n_atom_features, gcn_layers='[64, 64]', residual=False, activation='relu',
                  dropout_rate=0.5, l2=0):
-	# GCN from Kipf et al, 2017
+	"""Build a Graph Convolutional Network (GCN) (Kipf et al, 2017) submodel"""
 	# I'm using a different kernel initializer though
 	# GlobalSumPool was not part of the original GCN model, but is necessary to get a graph-level embedding
 	gcn_layers = literal_eval(gcn_layers)
@@ -194,6 +204,7 @@ def gcn_submodel(n_atom_features, gcn_layers='[64, 64]', residual=False, activat
 
 def gat_submodel(n_atom_features, gat_layers='[64, 64]', n_attention_heads=8, concat_heads=True, residual=False,
                  dropout_rate=0.5, l2=0):
+	"""Build a Graph Attention Network (GAT) (Velickovic et al, 2018) submodel."""
 	gat_layers = literal_eval(gat_layers)
 	regularizer = l1_l2(l1=0, l2=l2)
 	nodes_input = Input(shape=(None, n_atom_features))
@@ -221,6 +232,7 @@ def gat_submodel(n_atom_features, gat_layers='[64, 64]', n_attention_heads=8, co
 
 
 def dense_attention(inputs, feature_size, return_alphas=False):
+	"""Dense attention layer"""
 	# based on PaccMann code (dense_attention_layer): https://github.com/drugilsberg/paccmann/blob/master/paccmann/layers.py
 	alphas = Dense(feature_size, activation='softmax', name='attention')(inputs)
 	output = Multiply(name='filtered_with_attention')([inputs, alphas])

@@ -22,6 +22,26 @@ from src.scoring import scoring_metrics
 
 
 def save_evaluation_results(results_dict, hyperparams, model_descr, model_dir, output_filepath=None):
+    """
+    Save model evaluation results and best hyperparameter values to a CSV file.
+
+    Parameters
+    ----------
+    results_dict: dict
+        Dictionary containing the model performance scores.
+    hyperparams: dict
+        The hyperparameters and their respective values.
+    model_descr: str
+        Model description.
+    model_dir:
+        Directory where the trained model was saved.
+    output_filepath: str
+        Path to the CSV file.
+
+    Returns
+    -------
+    None
+    """
     results = {'model': model_descr, 'model_dir': model_dir}
     results.update({k: [v] for k, v in hyperparams.items()})
     results.update({k: [v] for k, v in results_dict.items()})
@@ -45,6 +65,7 @@ def save_evaluation_results(results_dict, hyperparams, model_descr, model_dir, o
 
 
 def plot_keras_history(history, output_dir):
+    """Plots training history for Keras models."""
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('Model loss')
@@ -55,8 +76,9 @@ def plot_keras_history(history, output_dir):
 
 
 def build_char_dict(dataset_path, smiles_cols, save=True):
-    '''Builds the character dictionary required when using TextCNN models'''
-    # Based on code from DeepChem
+    """Builds the character dictionary required when using TextCNN models.
+
+    Based on code from DeepChem (https://github.com/deepchem/deepchem/blob/master/deepchem/models/text_cnn.py)"""
     default_dict = {'#': 1, '(': 2, ')': 3, '+': 4, '-': 5, '/': 6, '1': 7, '2': 8, '3': 9,
                     '4': 10, '5': 11, '6': 12, '7': 13, '8': 14, '=': 15, 'C': 16, 'F': 17,
                     'H': 18, 'I': 19, 'N': 20, 'O': 21, 'P': 22, 'S': 23, '[': 24, '\\': 25,
@@ -104,12 +126,15 @@ def build_char_dict(dataset_path, smiles_cols, save=True):
 
 
 def get_max_number_of_atoms(smiles_list):
+    """Returns the maximum number of atoms seen in a list of SMILES strings"""
     num_atoms = [MolFromSmiles(smiles).GetNumAtoms() for smiles in smiles_list]
     return max(num_atoms)
 
 
 def zero_pad_graphs(n_max, x_list=None, a_list=None, e_list=None):
     """
+    Zero-pad molecular graphs.
+
     Copied this function from spektral. Modified the function so that the user can specify n_max
 
     Converts lists of node features, adjacency matrices and edge features to
@@ -166,6 +191,7 @@ def zero_pad_graphs(n_max, x_list=None, a_list=None, e_list=None):
 
 
 def get_dataset_dims(filepaths_dict, model_type):
+    """Returns the dimensions of each dataset in 'filepaths_dict'"""
     dims = {}
     for key, filepath in filepaths_dict.items():
         if filepath is not None:
@@ -185,6 +211,19 @@ def get_dataset_dims(filepaths_dict, model_type):
 
 
 def get_ml_algorithm(model_type):
+    """
+    Gets a machine learning model by name
+
+    Parameters
+    ----------
+    model_type: str
+        The name of the model
+
+    Returns
+    -------
+    estimator object
+
+    """
     models_dict = {'RandomForestRegressor': RandomForestRegressor(),
                    'ElasticNet': ElasticNet(),
                    'SVR': SVR(),
@@ -196,6 +235,24 @@ def get_ml_algorithm(model_type):
 
 
 def evaluate_ml_model(model, test_dataset, metrics):
+    """
+    Evaluates traditional machine learning models.
+
+    Parameters
+    ----------
+    model: estimator object
+        The trained model.
+    test_dataset: MultiInputDataset object
+        The multi-input test dataset.
+    metrics: list
+        List of scoring metrics.
+
+    Returns
+    -------
+    scores_dict: dict
+        Dictionary with the model performance results.
+
+    """
     scores_dict = {}
     y_pred = model.predict(test_dataset.X)
     for metric_name in metrics:
@@ -205,6 +262,31 @@ def evaluate_ml_model(model, test_dataset, metrics):
 
 
 def plot_morgan_bits(smiles_file, smiles_col, sample_id, bits, drug_img_filepath, bits_img_filepath, prefix=None):
+    """
+    Draw 2D depictions of user-defined Morgan (ECFP) fingerprint bits that are 'ON' (set to 1) in a given molecule.
+
+    Parameters
+    ----------
+    smiles_file: str
+        Path to file with molecules represented as SMILES strings.
+    smiles_col: str
+        Column containing the SMILES strings.
+    sample_id: int
+        The row containing the molecule for which the bits will be plotted.
+    bits: list
+        The Morgan fingerprint bits that will be plotted.
+    drug_img_filepath:
+        Path to save the image of the full molecule.
+    bits_img_filepath:
+        Path to save the 2D depictions of the user-selected 'ON' bits.
+    prefix: str
+        String to add to the bit labels.
+
+    Returns
+    -------
+    None
+
+    """
     test_response_data = pd.read_csv(smiles_file)
     sample = test_response_data.loc[sample_id, :]
     drug = Chem.MolFromSmiles(sample[smiles_col])

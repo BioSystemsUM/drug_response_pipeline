@@ -11,7 +11,18 @@ class MultiInputDataset(object):
 	"""
 
 	def __init__(self, response_dataset_path=None, id_cols=None, output_col=None, input_order=None):
-		""""""
+		"""
+		Parameters
+		----------
+		response_dataset_path: str
+			Path to drug response dataset.
+		id_cols: list
+			Names of the columns containing identifiers.
+		output_col: str
+			The name of the output variable.
+		input_order: list
+			Order of the input types in the multi-input dataset.
+		"""
 		if response_dataset_path is not None:
 			self.response_dataset, self.y = self.load_response_file(response_dataset_path, output_col)
 		else:
@@ -31,40 +42,124 @@ class MultiInputDataset(object):
 		self.input_order = input_order
 
 	def load_response_file(self, response_dataset_path, output_col):
-		"""Loads response file and extracts the output variable"""
+		"""
+		Loads response file and extracts the output variable.
+
+		Parameters
+		----------
+		response_dataset_path: str
+			Path to response dataset file.
+		output_col: str
+			Name of the output column.
+
+		Returns
+		-------
+		response_df: DataFrame
+			The full response dataset as a DataFrame.
+		y:
+			The output variable.
+		"""
 		response_df = pd.read_csv(response_dataset_path)
 		y = response_df[output_col].values
 		return response_df, y
 
 	def load_drugA(self, drugA_file):
-		"""Load featurized data for drug A"""
+		"""
+		Load featurized data for drug A.
+
+		Parameters
+		----------
+		drugA_file: str
+			Path to the file containing featurized drugA data.
+
+		Returns
+		-------
+		None
+		"""
 		if drugA_file is not None:
 			self.X_dict['drugA'] = self._load_features(drugA_file, dtype=None)
 
 	def load_drugB(self, drugB_file):
-		"""Load featurized data for drug B"""
+		"""
+		Load featurized data for drug B.
+
+		Parameters
+		----------
+		drugB_file: str
+			Path to the file containing featurized drugB data.
+
+		Returns
+		-------
+		None
+		"""
 		if drugB_file is not None:
 			self.X_dict['drugB'] = self._load_features(drugB_file, dtype=None)
 
 	def load_graph_data(self, nodes_file, adj_file):
-		"""Load nodes and adjacency matrix files """
+		"""
+		Load nodes and adjacency matrix files.
+
+		Parameters
+		----------
+		nodes_file: str
+			Path to file containing node (atom) features.
+		adj_file: str
+			Path to file containing the adjacency matrices.
+
+		Returns
+		-------
+		None
+		"""
 		if (nodes_file is not None) and (adj_file is not None):
 			drug_letter = os.path.split(os.path.splitext(nodes_file)[0])[-1].split('_')[1][-1]
 			self.X_dict['drug%s_atom_feat' % drug_letter] = self._load_features(nodes_file)
 			self.X_dict['drug%s_adj' % drug_letter] = self._load_features(adj_file)
 
 	def load_expr(self, rnaseq_file):
-		"""Load RNA-seq gene expression file"""
+		"""
+		Load RNA-seq gene expression data.
+
+		Parameters
+		----------
+		rnaseq_file: str
+			Path to RNA-Seq dataset.
+
+		Returns
+		-------
+		None
+		"""
 		if rnaseq_file is not None:
 			self.X_dict['expr'] = self._load_features(rnaseq_file, dtype=np.float32)
 
 	def load_mut(self, mut_file):
-		"""Load mutation file"""
+		"""
+		Load mutation data.
+
+		Parameters
+		----------
+		mut_file: str
+			Path to file with mutation data.
+
+		Returns
+		-------
+		None
+		"""
 		if mut_file is not None:
 			self.X_dict['mut'] = self._load_features(mut_file, dtype=np.int8)
 
 	def load_cnv(self, cnv_file):
-		"""Load copy number variation file"""
+		"""
+		Load copy number variation (CNV) data.
+
+		Parameters
+		----------
+		cnv_file: str
+			Path to file with CNV data.
+
+		Returns
+		-------
+		None
+		"""
 		if cnv_file is not None:
 			self.X_dict['cnv'] = self._load_features(cnv_file, dtype=np.int8)  # np.int8 assuming this is the GISTIC file
 
@@ -83,23 +178,25 @@ class MultiInputDataset(object):
 		return data
 
 	def load_dataset_dict(self, dataset_dict_path):
-		"""Loads the dataset dictionary (X_dict) from a pickle file."""
+		"""Load the dataset dictionary (X_dict) from a pickle file."""
 		with open(dataset_dict_path, 'rb') as f:
 			self.X_dict = pickle.load(f)
 		return self.X_dict
 
 	def load_y(self, y_path):
-		"""Loads the output variable from a pickle file."""
+		"""Load the output variable from a pickle file."""
 		with open(y_path, 'rb') as f:
 			self.y = pickle.load(f)
 		return self.y
 
 	def load_feature_names(self, feature_names_filepath):
+		"""Load feature names from a pickle file."""
 		with open(feature_names_filepath, 'rb') as f:
 			self.feature_names = pickle.load(f)
 		return self.feature_names # will be a dict
 
 	def feature_names_to_list(self):
+		"""Get feature names as a list."""
 		feature_names_list = []
 		for input_type in self.input_order:
 			feature_names_list.extend(self.feature_names[input_type])
@@ -107,7 +204,7 @@ class MultiInputDataset(object):
 
 
 	def X_dict_to_list(self):
-		"""Converts X_dict into a list maintaining the specified input (dict keys) order"""
+		"""Convert X_dict into a list maintaining the specified input (dict keys) order"""
 		self.X_list = []
 		if self.input_order is None:
 			self.input_order = self.X_dict.keys()
@@ -116,12 +213,13 @@ class MultiInputDataset(object):
 		return self.X_list
 
 	def create_from_dict(self, dataset_dict, y, response_df=None):
-		"""Creates a MultiInputDataset from a dictionary"""
+		"""Create a MultiInputDataset from a dictionary"""
 		self.X_dict = dataset_dict
 		self.y = y
 		self.response_dataset = response_df
 
 	def select(self, indices):
+		"""Select samples from the multi-input dataset"""
 		selected_X_dict = {}
 		for key, val in self.X_dict.items():
 			selected_X_dict[key] = val[indices]
@@ -132,6 +230,7 @@ class MultiInputDataset(object):
 		return new_dataset
 
 	def sample(self, n=100):
+		"""Random sample of items from the multi-input dataset."""
 		if n > self.response_dataset.shape[0]:
 			raise ValueError('n must be smaller than {0}'.format(self.response_dataset.shape[0]))
 		selected_inds = np.random.choice(self.response_dataset.shape[0], n, replace=False)
@@ -165,7 +264,7 @@ class MultiInputDataset(object):
 		return new_multiinputdataset
 
 	def get_dataset_dimensions(self, model_type):
-		"""Gets the shape of each of the individual datasets"""
+		"""Get the shape of each of the individual datasets"""
 		dims = {}
 		for key, dataset in self.X_dict.items():
 			if dataset is not None:
@@ -182,7 +281,7 @@ class MultiInputDataset(object):
 		return dims
 
 	def get_n_rows(self):
-		"""Gets the number of rows"""
+		"""Get the number of rows"""
 		return self.response_dataset.shape[0]
 
 	def get_row_ids(self, sep='_'):
@@ -191,11 +290,11 @@ class MultiInputDataset(object):
 		return row_ids_df['concat_ids'].values
 
 	def save_dataset_dict(self, output_filepath):
-		"""Saves the multi-input dataset dictionary (X_dict) as a pickle file."""
+		"""Save the multi-input dataset dictionary (X_dict) as a pickle file."""
 		with open(output_filepath, 'wb') as f:
 			pickle.dump(self.X_dict, f)
 
 	def save_y(self, output_filepath):
-		"""Saves the output variable as a pickle file."""
+		"""Save the output variable as a pickle file."""
 		with open(output_filepath, 'wb') as f:
 			pickle.dump(self.y, f)

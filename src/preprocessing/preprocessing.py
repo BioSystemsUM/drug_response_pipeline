@@ -25,7 +25,7 @@ sys.setrecursionlimit(1000000)
 
 
 class Conv1DReshaper(TransformerMixin, BaseEstimator):
-	"""Adds a dimension to the dataset so that it can be used as input to Conv1D"""
+	"""Add a dimension to the dataset so that it can be used as input to a 1D CNN."""
 
 	def fit(self, X, y=None):
 		return self
@@ -37,6 +37,7 @@ class Conv1DReshaper(TransformerMixin, BaseEstimator):
 
 
 class Conv2DReshaper(TransformerMixin, BaseEstimator):
+	"""Reshape dataset so that it can be used as input to a 2D CNN"""
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
@@ -62,9 +63,18 @@ class Conv2DReshaper(TransformerMixin, BaseEstimator):
 
 
 class DatasetPreprocessor(object):
+	"""General class to preprocess (merge, split) datasets read from CSV files."""
 
 	def __init__(self, dataset_filepath, id_col=None):
-		self.dataset = self.load_data(dataset_filepath)  # will be a pandas DataFrame (or Numpy array?? or maybe not)
+		"""
+		Parameters
+		----------
+		dataset_filepath: str
+			Path to the dataset file.
+		id_col: str
+			The ID column
+		"""
+		self.dataset = self.load_data(dataset_filepath)
 		self.split_datasets = None  # will be a dict with keys indicating train/val/test
 		self.id_col = id_col
 
@@ -77,6 +87,18 @@ class DatasetPreprocessor(object):
 			return None
 
 	def merge(self, dataset_to_merge_filepath):
+		"""
+		Merge with a response dataset
+
+		Parameters
+		----------
+		dataset_to_merge_filepath: str
+			Path to the response dataset file to be merged.
+
+		Returns
+		-------
+		None
+		"""
 		response_df = pd.read_csv(dataset_to_merge_filepath, engine='python')
 		drop_cols = response_df.columns.tolist()
 		drop_cols.remove(self.id_col)
@@ -87,6 +109,18 @@ class DatasetPreprocessor(object):
 		self.dataset = merged_df
 
 	def split(self, split_inds_file):
+		"""
+		Split the dataset.
+
+		Parameters
+		----------
+		split_inds_file: str
+			Path to file containing the train/validation/test split indices.
+
+		Returns
+		-------
+		None
+		"""
 		with open(split_inds_file, 'rb') as f:
 			inds_lists = pickle.load(f)
 
@@ -101,6 +135,25 @@ class DatasetPreprocessor(object):
 			self.split_datasets[dataset_names[i]] = df
 
 	def save_split_datasets(self, output_dir, output_name, output_format, drop_id=False):
+		"""
+		Saves split datasets.
+
+		Parameters
+		----------
+		output_dir: str
+			Path to the directory where the split dataset files will be saved.
+		output_name: str
+			The name of the file (a suffix indicating whether the file is the training, validation or test set will
+			be added to this string)
+		output_format: str
+			The file format.
+		drop_id: bool
+			Whether to drop the ID column or not.
+
+		Returns
+		-------
+		None
+		"""
 		if drop_id:
 			drop_cols = [self.id_col]
 		else:
@@ -111,6 +164,20 @@ class DatasetPreprocessor(object):
 			self._save_to_file(dataset=value, output_filepath=filepath, cols_to_drop=drop_cols)
 
 	def save_full_dataset(self, output_filepath, drop_id=False):
+		"""
+		Saves the full dataset.
+
+		Parameters
+		----------
+		output_filepath: str
+			Path where the file will be saved.
+		drop_id: bool
+			Whether to drop the ID column or not
+
+		Returns
+		-------
+		None
+		"""
 		if drop_id:
 			drop_cols = [self.id_col]
 		else:
@@ -118,6 +185,7 @@ class DatasetPreprocessor(object):
 		self._save_to_file(dataset=self.dataset, output_filepath=output_filepath, cols_to_drop=drop_cols)
 
 	def _save_to_file(self, dataset, output_filepath, cols_to_drop=None):
+		"""Save to CSV, CSV.GZ or npy file."""
 		split_path = os.path.splitext(output_filepath)
 		if split_path[-1] == '.gz':
 			format = os.path.splitext(split_path[0])[-1] + split_path[-1]
@@ -147,8 +215,19 @@ class DatasetPreprocessor(object):
 
 
 class DrugDatasetPreprocessor(DatasetPreprocessor):
+	"""Preprocess drug datasets"""
 
 	def __init__(self, dataset_filepath, id_col=None, smiles_col=None):
+		"""
+		Parameters
+		----------
+		dataset_filepath: str
+			Path to the dataset file.
+		id_col: str
+			The ID column.
+		smiles_col:
+			The column containing the SMILES strings.
+		"""
 		super().__init__(dataset_filepath=dataset_filepath, id_col=id_col)
 		self.smiles_col = smiles_col
 
@@ -164,6 +243,20 @@ class DrugDatasetPreprocessor(DatasetPreprocessor):
 		return max(num_atoms)
 
 	def get_smiles_strings(self, smiles_col_name, dropna=True):
+		"""
+		Retrieve canonical SMILES strings for the molecules using PubChemPy.
+
+		Parameters
+		----------
+		smiles_col_name: str
+			The name that will be given to the SMILES column that will be added to the dataset.
+		dropna: bool
+			Whether to drop rows that are missing SMILES strings
+
+		Returns
+		-------
+		None
+		"""
 		self.smiles_col = smiles_col_name
 		drugs = self._get_unique_ids()
 		smiles_dict = {'DRUG': [], smiles_col_name: []}
@@ -182,6 +275,7 @@ class DrugDatasetPreprocessor(DatasetPreprocessor):
 			self.dataset.dropna(axis=0, how='any', subset=[smiles_col_name], inplace=False)
 
 	def standardize_smiles(self):
+		"""Standardize the molecules"""
 		if self.smiles_col is None:
 			raise ValueError('SMILES column is undefined. Please define the column containing the SMILES'
 							 'strings or get SMILES strings by calling the .get_smiles_strings method')
@@ -192,6 +286,28 @@ class DrugDatasetPreprocessor(DatasetPreprocessor):
 
 	def featurize(self, featurizer_name, featurizer_args, output_dir, output_prefix=None, featurize_full_dataset=False,
 				  featurize_split_datasets=True):
+		"""
+		Featurize the molecules.
+
+		Parameters
+		----------
+		featurizer_name: str
+			The name of the featurization method.
+		featurizer_args: dict
+			Arguments to be passed to the featurizer class.
+		output_dir: str
+			Path to directory where the featurized drug dataset will be saved
+		output_prefix: str
+			Prefix to add to the output filename
+		featurize_full_dataset: bool
+			Whether to featurize the full dataset.
+		featurize_split_datasets: bool
+			Whether to featurize the split dataset (the train/validation/test splits).
+
+		Returns
+		-------
+
+		"""
 		if self.smiles_col is None:
 			raise ValueError('SMILES column is undefined. Please define the column containing the SMILES'
 							 'strings or get SMILES strings by calling the .get_smiles_strings method')
@@ -236,8 +352,8 @@ class DrugDatasetPreprocessor(DatasetPreprocessor):
 			                        output_path_adjacency_matrices=os.path.join(output_dir,
 			                                                                    '%s_adjmatrix.npy' % output_prefix))
 
-
 	def save_smiles_to_file(self, output_filepath):
+		"""Save the unique SMILES strings in the dataset to a txt file."""
 		smiles_list = list(set(self._get_unique_smiles()))
 		with open(output_filepath, 'w') as f:
 			for i, smiles in enumerate(smiles_list):
@@ -248,15 +364,24 @@ class DrugDatasetPreprocessor(DatasetPreprocessor):
 
 
 class OmicsDatasetPreprocessor(DatasetPreprocessor):
+	"""Preprocess omics datasets."""
 
-	# OmicsDatasetPreprocessor must have rows=cell lines/patients and columns=genes
 	def __init__(self, dataset_filepath, id_col=None):
+		"""
+		Parameters
+		----------
+		dataset_filepath: str
+			Path to the dataset file. The rows must correspond to cell lines/patients and the columns must be genes.
+		id_col: str
+			The ID column.
+		"""
 		super().__init__(dataset_filepath=dataset_filepath, id_col=id_col)
 
 	def _build_preprocessing_pipeline(self, variance_threshold=None, scaler=None, reshape_conv1d=False,
 									  reshape_conv2d=False, conv_2d_shape=138, umap_embeddings=False,
 									  umap_n_neighbors=20, umap_n_components=50, umap_use_densmap=False,
 									  deepinsight_images=False, deepinsight_method='tsne', deepinsight_grid_size=50):
+		"""Build the preprocessing pipeline"""
 		steps = []
 
 		if variance_threshold is not None:
@@ -295,6 +420,42 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 									 umap_embeddings=False, umap_n_neighbors=20, umap_n_components=50,
 									 umap_use_densmap=False, deepinsight_images=False, deepinsight_method='tsne',
 									 deepinsight_grid_size=50):
+		"""
+		Preprocess the split datasets.
+
+		Parameters
+		----------
+		variance_threshold: float or None
+			The threshold for VarianceThreshold. VarianceThreshold will only be used if this is not None.
+		scaler: str or None
+			The scaling method that will be applied. Scaling will only be performed if this is not None.
+		reshape_conv1d: bool
+			If True, reshapes the data into a format suitable for 1D CNNs.
+		reshape_conv2d: bool
+			If True, reshapes the data into a format suitable for 2D CNNs.
+		conv_2d_shape:
+			A tuple containing the width and height of the images created when using Conv2DReshaper.
+		umap_embeddings: bool
+			If True, transforms the data into UMAP embeddings
+		umap_n_neighbors: int
+			The size of local neighborhood (in terms of number of neighboring sample points) used for manifold
+			approximation in UMAP.
+		umap_n_components: int
+			The dimension of the space to embed into.
+		umap_use_densmap: bool
+			If True, uses Densmap instead of the original UMAP algorithm.
+		deepinsight_images: bool
+			If True, transforms the tabular omics data into images using Deepinsight.
+		deepinsight_method: str
+			The feature extraction method for Deepinsight. Only used if deepinsight_images is True.
+		deepinsight_grid_size: int
+			The size of the images created using Deepinsight. Only used if deepinsight_images is True.
+
+		Returns
+		-------
+		dict
+			The preprocessed split datasets.
+		"""
 		if self.split_datasets is None:
 			print('The dataset has not been split yet. Call the .split() method first')
 		else:
@@ -321,6 +482,42 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 								umap_embeddings=False, umap_n_neighbors=20, umap_n_components=50,
 								umap_use_densmap=False, deepinsight_images=False, deepinsight_method='tsne',
 								deepinsight_grid_size=50):
+		"""
+		Preprocess the dataset.
+
+		Parameters
+		----------
+		variance_threshold: float or None
+			The threshold for VarianceThreshold. VarianceThreshold will only be used if this is not None.
+		scaler: str or None
+			The scaling method that will be applied. Scaling will only be performed if this is not None.
+		reshape_conv1d: bool
+			If True, reshapes the data into a format suitable for 1D CNNs.
+		reshape_conv2d: bool
+			If True, reshapes the data into a format suitable for 2D CNNs.
+		conv_2d_shape:
+			A tuple containing the width and height of the images created when using Conv2DReshaper.
+		umap_embeddings: bool
+			If True, transforms the data into UMAP embeddings
+		umap_n_neighbors: int
+			The size of local neighborhood (in terms of number of neighboring sample points) used for manifold
+			approximation in UMAP.
+		umap_n_components: int
+			The dimension of the space to embed into.
+		umap_use_densmap: bool
+			If True, uses Densmap instead of the original UMAP algorithm.
+		deepinsight_images: bool
+			If True, transforms the tabular omics data into images using Deepinsight.
+		deepinsight_method: str
+			The feature extraction method for Deepinsight. Only used if deepinsight_images is True.
+		deepinsight_grid_size: int
+			The size of the images created using Deepinsight. Only used if deepinsight_images is True.
+
+		Returns
+		-------
+		dict
+			The preprocessed dataset.
+		"""
 		pipeline = self._build_preprocessing_pipeline(variance_threshold, scaler, reshape_conv1d, reshape_conv2d,
 													  conv_2d_shape, umap_embeddings, umap_n_neighbors,
 													  umap_n_components, umap_use_densmap, deepinsight_images,
@@ -333,6 +530,17 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 		return self.dataset
 
 	def reorder_genes(self, gene_order_filepath=None, sort_alphabetically=False):
+		"""
+
+		Parameters
+		----------
+		gene_order_filepath
+		sort_alphabetically
+
+		Returns
+		-------
+
+		"""
 
 		if (gene_order_filepath is not None) and (os.path.exists(gene_order_filepath)):
 			with open(gene_order_filepath, 'rb') as f:
@@ -349,6 +557,29 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 
 	def filter_genes(self, use_targets=False, use_landmark=False, use_cosmic=False, use_ncg=False, use_msigdb=False,
 					 use_aliases=True):
+		"""
+		Select genes using predefined gene lists.
+
+		Parameters
+		----------
+		use_targets: bool
+			If True, uses genes involved in known drug-gene interactions in DGIdb # TODO: make this more general in the future, as this only applies to ALMANAC drugs at the moment
+		use_landmark: bool
+			If True, uses landmark genes.
+		use_cosmic: bool
+			If True, uses genes from the COSMIC Cancer Gene Census
+		use_ncg: bool
+			If True, uses genes from the Network of Cancer Genes (NCG6.0)
+		use_msigdb: bool
+			If True, uses genes from the MSigDB C6 (oncogenic signature gene sets) and C4 (computational gene sets)
+			collections
+		use_aliases: bool
+			Whether to use aliases for certain gene names
+
+		Returns
+		-------
+		None
+		"""
 		# TODO: make this more general
 		selected = [self.id_col]
 
@@ -444,6 +675,7 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 
 	def get_clustering_gene_order(self, output_filepath, method='complete', metric='correlation',
 								  scaling_method='MinMaxScaler'):
+		"""Use hierarchical clustering to find a new order for the genes"""
 		# it's better if we do this with the unmerged file
 		df = self.dataset.drop([self.id_col], axis=1)
 		labels = df.columns.tolist()
@@ -466,6 +698,7 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 			pickle.dump(d['ivl'], f)
 
 	def get_chromosome_gene_order(self, output_filepath):
+		"""Order of the genes according to their chromosome positions."""
 		# TODO: improve code. right now it's very specific to the ALMANAC dataset and it's confusing
 		# Replace with HDGFRP3 with HDGFL3:
 		omics_genes = ['HDGFL3' if gene == 'HDGFRP3' else gene for gene in self.dataset]

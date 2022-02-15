@@ -13,6 +13,14 @@ class VotingEnsemble(object):
 	"""
 
 	def __init__(self, base_models, mode):
+		"""
+		Parameters
+		----------
+		base_models: list or None
+			List of base models to include in the ensemble.
+		mode: str
+			The type of task ('regression' or 'classification').
+		"""
 		self.base_models = base_models
 		self.mode = mode
 
@@ -31,9 +39,22 @@ class VotingEnsemble(object):
 
 	def fit(self, datasets, fit_params):
 		"""
-		Fits the models using the datasets provided.
+		Fit the base models using the dataset provided for each model.
+
+		Parameters
+		----------
+		datasets: list
+			A list of multi-input datasets to be used as input to the base models. Each model uses its own multi-input
+			dataset because the types of input features may be different for each type of model (the output variable is
+			the same for all). The length of the list must be the same as the length of base_models.
+		fit_params: dict
+			Parameters to pass to Keras Model's fit method
+
+		Returns
+		-------
+		None
+
 		"""
-		# dataset format will be different depending on the type of model (Keras multi-input vs ML models)
 		fit_models = []
 		for model, dataset in zip(self.base_models, datasets):
 			if isinstance(model, keras.models.Model):
@@ -45,7 +66,19 @@ class VotingEnsemble(object):
 
 	def predict(self, datasets):
 		"""
-		Makes predictions for the provided dataset.
+		Predicts the output value for the provided data.
+
+		Parameters
+		----------
+		datasets: list
+			A list of multi-input datasets to be used as input to the base models. Each model uses its own multi-input
+			dataset because the types of input features may be different for each type of model. The length of the list
+			must be the same as the length of base_models.
+
+		Returns
+		-------
+		ensemble_pred: array
+			The predictions made by the ensemble.
 		"""
 		# dataset format will be different depending on the type of model (Keras multi-input vs ML models)
 		predictions = []
@@ -65,7 +98,20 @@ class VotingEnsemble(object):
 
 	def evaluate(self, datasets, metrics):
 		"""
-		Evaluates the performance of this ensemble on the specified datasets.
+		Evaluates the performance of the ensemble.
+		Parameters
+		----------
+		datasets: list
+			A list of multi-input datasets to be used as input to the base models. Each model uses its own multi-input
+			dataset because the types of input features may be different for each type of model (the output variable
+			is the same for all). The length of the list must be the same as the length of base_models.
+		metrics: list
+			The metrics that will be used to score the ensemble.
+
+		Returns
+		-------
+		scores_dict: dict
+			A dictionary containing the performance scores.
 		"""
 		predictions = self.predict(datasets)
 		scores_dict = {}

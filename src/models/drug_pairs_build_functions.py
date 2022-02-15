@@ -17,6 +17,8 @@ DEFAULT_CHAR_DICT_STR = str({'#': 1, '(': 2, ')': 3, '+': 4, '-': 5, '/': 6, '1'
 def expr_drug_dense_model(expr_dim=None, drug_dim=None, expr_hlayers_sizes='[10]', drug_hlayers_sizes='[10]',
                           predictor_hlayers_sizes='[10]', initializer='he_normal', hidden_activation='relu', l1=0,
                           l2=0, input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, drugA
+	and drugB, with fully-connected layers in all subnetworks."""
 	expr_input = Input(shape=expr_dim, name='expr')
 	drug1_input = Input(shape=drug_dim, name='drugA')
 	drug2_input = Input(shape=drug_dim, name='drugB')
@@ -64,6 +66,9 @@ def expr_drug_textcnn_model(expr_dim=None, drug_dim=None, expr_hlayers_sizes='[1
                             drug_num_filters='[100, 200, 200, 200, 200, 100, 100, 100, 100, 100, 160, 160]',
                             drug_dropout=0.25, drug_l1=0, drug_l2=0, l1=0, l2=0,
                             input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, drugA and
+	drugB. The expression subnetwork uses fully connected layers, and the drug subnetworks are based on the TextCNN
+	model."""
 	expr_input = Input(shape=expr_dim, name='expr')
 	drug1_input = Input(shape=(drug_seq_length,), dtype=tf.int32, name='drugA')
 	drug2_input = Input(shape=(drug_seq_length,), dtype=tf.int32, name='drugB')
@@ -107,6 +112,8 @@ def expr1dconv_drug_dense_model(expr_dim=None, drug_dim=None, expr_num_filters='
                                 expr_pool_size=2, expr_batchnorm=True, drug_hlayers_sizes='[10]',
                                 predictor_hlayers_sizes='[10]', initializer='he_normal', hidden_activation='relu', l1=0,
                                 l2=0, input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, drugA and
+	drugB. The expression subnetwork is a 1D CNN and the drug subnetworks use fully-connected layers."""
 	expr_input = Input(shape=(expr_dim, 1), name='expr')
 	drug1_input = Input(shape=drug_dim, name='drugA')
 	drug2_input = Input(shape=drug_dim, name='drugB')
@@ -156,6 +163,8 @@ def expr1dconv_drug_textcnn_model(expr_dim=None, drug_dim=None, expr_num_filters
                                   drug_num_filters='[100, 200, 200, 200, 200, 100, 100, 100, 100, 100, 160, 160]',
                                   drug_dropout=0.25, drug_l1=0, drug_l2=0, l1=0, l2=0,
                                   input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, drugA and
+	drugB. The expression subnetwork is a 1D CNN and the drug subnetworks are TextCNN submodels."""
 	expr_input = Input(shape=(expr_dim, 1), name='expr')
 	drug1_input = Input(shape=(drug_seq_length,), dtype=tf.int32, name='drugA')
 	drug2_input = Input(shape=(drug_seq_length,), dtype=tf.int32, name='drugB')
@@ -201,6 +210,8 @@ def expr2dconv_drug_dense_model(expr_dim=None, drug_dim=None, expr_num_filters='
                                 expr_pool_size=(2, 2), expr_batchnorm=True, drug_hlayers_sizes='[10]',
                                 predictor_hlayers_sizes='[10]', initializer='he_normal', hidden_activation='relu', l1=0,
                                 l2=0, input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, drugA and
+	drugB. The expression subnetwork is a 2D CNN and the drug subnetworks use fully-connected layers."""
 	expr_input = Input(shape=expr_dim, name='expr')
 	drug1_input = Input(shape=drug_dim, name='drugA')
 	drug2_input = Input(shape=drug_dim, name='drugB')
@@ -245,6 +256,8 @@ def expr2dconv_densenet_drug_dense_model(expr_dim=None, drug_dim=None, drug_hlay
                                          predictor_hlayers_sizes='[10]', initializer='he_normal',
                                          hidden_activation='relu', l1=0, l2=0, input_dropout=0, hidden_dropout=0,
                                          optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, drugA and
+	drugB. The expression subnetwork is a 2D CNN (Densenet) and the drug subnetworks use fully-connected layers."""
 	expr_input = Input(shape=expr_dim, name='expr')
 	drug1_input = Input(shape=drug_dim, name='drugA')
 	drug2_input = Input(shape=drug_dim, name='drugB')
@@ -283,61 +296,12 @@ def expr2dconv_densenet_drug_dense_model(expr_dim=None, drug_dim=None, drug_hlay
 	return model
 
 
-def expr2dconv_drug_textcnn_model(expr_dim=None, drug_dim=None, expr_num_filters='[32, 32]',
-                                  expr_kernel_size1=(5, 5), expr_kernel_size_rest=(3, 3),
-                                  expr_pool_size=(2, 2), expr_batchnorm=True,
-                                  predictor_hlayers_sizes='[10]', initializer='he_normal', hidden_activation='relu',
-                                  drug_seq_length=0, drug_n_embedding=75,
-                                  drug_char_dict=DEFAULT_CHAR_DICT_STR,
-                                  drug_kernel_sizes='[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]',
-                                  drug_num_filters='[100, 200, 200, 200, 200, 100, 100, 100, 100, 100, 160, 160]',
-                                  drug_dropout=0.25, drug_l1=0, drug_l2=0, l1=0, l2=0,
-                                  hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
-    expr_input = Input(shape=(expr_dim), name='expr')
-    drug1_input = Input(shape=(drug_seq_length,), dtype=tf.int32, name='drugA')
-    drug2_input = Input(shape=(drug_seq_length,), dtype=tf.int32, name='drugB')
-
-    expr = conv2d_submodel(expr_input, num_filters=expr_num_filters, kernel_size1=expr_kernel_size1,
-                           kernel_size_rest=expr_kernel_size_rest, pool_size=expr_pool_size,
-                           initializer=initializer, batchnorm=expr_batchnorm,
-                           hidden_activation=hidden_activation)
-    drug_submodel = textcnn_submodel(seq_length=drug_seq_length, n_embedding=drug_n_embedding,
-                                     char_dict=drug_char_dict, kernel_sizes=drug_kernel_sizes,
-                                     num_filters=drug_num_filters, drug_dropout=drug_dropout, l1=drug_l1, l2=drug_l2)
-    drugA = drug_submodel(drug1_input)
-    drugB = drug_submodel(drug2_input)
-
-    concat = concatenate([expr, drugA, drugB])
-
-    # Additional dense layers after concatenating:
-    main_branch = dense_submodel(concat, hlayers_sizes=predictor_hlayers_sizes,
-                                 l1_regularization=l1, l2_regularization=l2,
-                                 hidden_activation=hidden_activation, input_dropout=0,
-                                 hidden_dropout=hidden_dropout)
-    # Add output layer
-    output = Dense(1, activation='linear', kernel_initializer=initializer, name='output')(main_branch)
-
-    # create Model object
-    model = Model(inputs=[expr_input, drug1_input, drug2_input], outputs=[output])
-
-    # Define optimizer
-    opt_class = dict(getmembers(optimizers))[optimizer]
-    if optimizer == 'SGD':
-        opt = opt_class(lr=learn_rate, decay=1e-6, momentum=0.9, nesterov=True)
-    else:
-        opt = opt_class(lr=learn_rate)
-
-    # Compile model
-    model.compile(loss='mean_squared_error', optimizer=opt,
-                  metrics=[MeanSquaredError(), RootMeanSquaredError(), keras_r2_score, keras_spearman, keras_pearson])
-
-    return model
-
-
 def mut_cnv_drug_dense_model(mut_dim=None, cnv_dim=None, drug_dim=None, mut_hlayers_sizes='[10]',
                              cnv_hlayers_sizes='[10]', drug_hlayers_sizes='[10]', predictor_hlayers_sizes='[10]',
                              initializer='he_normal', hidden_activation='relu', l1=0, l2=0, input_dropout=0,
                              hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for mutation data, CNV data,
+	drugA and drugB. All subnetworks use fully-connected layers."""
 	mut_input = Input(shape=mut_dim, name='mut')
 	cnv_input = Input(shape=cnv_dim, name='cnv')
 	drug1_input = Input(shape=drug_dim, name='drugA')
@@ -386,6 +350,8 @@ def expr_mut_cnv_drug_dense_model(expr_dim=None, mut_dim=None, cnv_dim=None, dru
                                   mut_hlayers_sizes='[10]', cnv_hlayers_sizes='[10]', drug_hlayers_sizes='[10]',
                                   predictor_hlayers_sizes='[10]', initializer='he_normal', hidden_activation='relu',
                                   l1=0, l2=0, input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, mutation
+	data, CNV data, drugA and drugB. All subnetworks use fully-connected layers."""
 	expr_input = Input(shape=expr_dim, name='expr')
 	mut_input = Input(shape=mut_dim, name='mut')
 	cnv_input = Input(shape=cnv_dim, name='cnv')
@@ -439,6 +405,9 @@ def expr_mut_cnv_drug_gcn_model(expr_dim=None, mut_dim=None, cnv_dim=None, drug_
                                 drug_gcn_layers='[64, 64]', drug_residual_connection=True, drug_dropout=0.5,
                                 predictor_hlayers_sizes='[10]', initializer='he_normal', hidden_activation='relu',
                                 l1=0, l2=0, input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, mutation
+	data, CNV data, drugA and drugB. The expression, mutation and CNV subnetworks use fully-connected layers and the
+	drug subnetworks use GCN."""
 	expr_input = Input(shape=expr_dim, name='expr')
 	mut_input = Input(shape=mut_dim, name='mut')
 	cnv_input = Input(shape=cnv_dim, name='cnv')
@@ -494,6 +463,8 @@ def mut_cnv_drug_gcn_model(mut_dim=None, cnv_dim=None, drug_dim=None, mut_hlayer
                            drug_residual_connection=True, drug_dropout=0.5, predictor_hlayers_sizes='[10]',
                            initializer='he_normal', hidden_activation='relu', l1=0, l2=0, input_dropout=0,
                            hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for mutation data, CNV data,
+	drugA and drugB. The mutation and CNV subnetworks use fully-connected layers and the drug subnetworks use GCN."""
 	mut_input = Input(shape=mut_dim, name='mut')
 	cnv_input = Input(shape=cnv_dim, name='cnv')
 	drugA_nodes_input = Input(shape=(None, drug_n_atom_features), name='drugA_atom_feat')
@@ -546,6 +517,8 @@ def mut1dconv_cnv1dconv_drug_dense_model(mut_dim=None, cnv_dim=None, drug_dim=No
                                          cnv_batchnorm=True, drug_hlayers_sizes='[10]', predictor_hlayers_sizes='[10]',
                                          initializer='he_normal', hidden_activation='relu', l1=0, l2=0, input_dropout=0,
                                          hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for mutation data, CNV data,
+	drugA and drugB. The mutation and CNV subnetworks are 1D CNNs and the drug subnetworks use fully-connected layers."""
 	mut_input = Input(shape=(mut_dim, 1), name='mut')
 	cnv_input = Input(shape=(cnv_dim, 1), name='cnv')
 	drug1_input = Input(shape=drug_dim, name='drugA')
@@ -599,6 +572,9 @@ def mut1dconv_cnv1dconv_expr1dconv_drug_dense_model(mut_dim=None, cnv_dim=None, 
                                                     predictor_hlayers_sizes='[10]', initializer='he_normal',
                                                     hidden_activation='relu', l1=0, l2=0, input_dropout=0,
                                                     hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data,
+	mutation data, CNV data, drugA and drugB. The expression, mutation and CNV subnetworks are 1D CNNs and the drug
+	subnetworks use fully-connected layers."""
 	mut_input = Input(shape=(mut_dim, 1), name='mut')
 	cnv_input = Input(shape=(cnv_dim, 1), name='cnv')
 	expr_input = Input(shape=(expr_dim, 1), name='expr')
@@ -650,6 +626,7 @@ def mut1dconv_cnv1dconv_expr1dconv_drug_dense_model(mut_dim=None, cnv_dim=None, 
 def two_drug_gcn_model(n_atom_features=30, gcn_layers='[64, 64]', residual=True, activation='relu', dropout=0.5,
                        predictor_hlayers_sizes='[10]', initializer='he_normal', hidden_activation='relu', l1=0,
                        l2=0, input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding GCN subnetworks for drugA and drugB."""
 	# drugA_nodes_input = Input(shape=(max_n_atoms, drug_n_atom_features), name='drugA_atom_feat')
 	# drugA_adjacency_input = Input(shape=(max_n_atoms, max_n_atoms), name='drugA_adj')
 	# drugB_nodes_input = Input(shape=(max_n_atoms, drug_n_atom_features), name='drugB_atom_feat')
@@ -694,6 +671,8 @@ def expr_drug_gcn_model(expr_dim=None, drug_dim=None, expr_hlayers_sizes='[10]',
                         drug_gcn_layers='[64, 64]', drug_residual_connection=True, drug_dropout=0.5,
                         predictor_hlayers_sizes='[10]', initializer='he_normal', hidden_activation='relu', l1=0, l2=0,
                         input_dropout=0, hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, drugA
+	and drugB. The expression subnetwork uses fully-connected layers and the drug subnetworks are GCNs"""
 	expr_input = Input(shape=expr_dim, name='expr')
 	drugA_nodes_input = Input(shape=(None, drug_n_atom_features), name='drugA_atom_feat')
 	drugA_adjacency_input = Input(shape=(None, None), name='drugA_adj')
@@ -741,6 +720,8 @@ def expr_drug_gat_model(expr_dim=None, drug_dim=None, expr_hlayers_sizes='[10]',
                         drug_residual_connection=True, drug_dropout=0.5, predictor_hlayers_sizes='[10]',
                         initializer='he_normal', hidden_activation='relu', l1=0, l2=0, input_dropout=0,
                         hidden_dropout=0, optimizer='Adam', learn_rate=0.001):
+	"""Build a multi-input deep learning model with separate feature-encoding subnetworks for expression data, drugA
+	and drugB. The expression subnetwork uses fully-connected layers and the drug subnetworks are GATs"""
 	expr_input = Input(shape=expr_dim, name='expr')
 	drugA_nodes_input = Input(shape=(None, drug_n_atom_features), name='drugA_atom_feat')
 	drugA_adjacency_input = Input(shape=(None, None), name='drugA_adj')
