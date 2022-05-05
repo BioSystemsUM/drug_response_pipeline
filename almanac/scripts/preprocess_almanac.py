@@ -368,9 +368,12 @@ def one_hot_encode_labels(response_dataset_path, output_dir):
 		onehot_drugB[drug] = 0
 	for drug in set(onehot_drugB.columns.tolist()).difference(set(onehot_drugA.columns.tolist())):
 		onehot_drugA[drug] = 0
-	onehot_cells.to_csv(os.path.join(output_dir, 'onehot_cell_line_names.csv'))
-	onehot_drugA.to_csv(os.path.join(output_dir, 'onehot_drugA_NSCs.csv'))
-	onehot_drugB.to_csv(os.path.join(output_dir, 'onehot_drugB_NSCs.csv'))
+	onehot_drugA = onehot_drugA.sort_index(axis=1)
+	onehot_drugB = onehot_drugB.sort_index(axis=1)
+	assert onehot_drugA.columns.tolist() == onehot_drugB.columns.tolist()
+	onehot_cells.to_csv(os.path.join(output_dir, 'onehot_cell_line_names.csv'), index=False)
+	onehot_drugA.to_csv(os.path.join(output_dir, 'onehot_drugA_NSCs.csv'), index=False)
+	onehot_drugB.to_csv(os.path.join(output_dir, 'onehot_drugB_NSCs.csv'), index=False)
 	# files need to be split before using
 
 
@@ -408,3 +411,7 @@ if __name__ == '__main__':
 	response_data_preprocessor.save_split_datasets(output_dir='../data/nci_almanac_preprocessed/response',
 	                                               output_name='almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples',
 	                                               output_format='.csv.gz')
+	# One-hot encoded IDs
+	one_hot_encode_labels(
+		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv',
+		output_dir='../data/nci_almanac_preprocessed/onehot')
