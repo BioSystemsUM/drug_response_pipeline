@@ -1,9 +1,15 @@
-install.packages("BiocManager") 
-BiocManager::install("WGCNA")
-install.packages(c("flashClust"))
+install.packages("remotes")
+install.packages(c("matrixStats", "Hmisc", "splines", "foreach", "doParallel", "fastcluster", "dynamicTreeCut", "survival", "BiocManager")) 
+BiocManager::install(c("GO.db", "preprocessCore", "impute"))
+#BiocManager::install("WGCNA")
+library(remotes)
+remotes::install_version("WGCNA", version = "1.69", repos = "http://cran.us.r-project.org", upgrade="never")
+install.packages("flashClust")
 
 library(WGCNA)
 library(flashClust)
+
+packageVersion("WGCNA")
 
 # Load training dataset
 dfTraining = read.csv('../data/nci_almanac_preprocessed/omics/split/merged_rnaseq_fpkm_prot_coding_train.csv.gz')
@@ -54,7 +60,7 @@ modules_train = labels2colors(tree$labels)
 PCs_train = moduleEigengenes(dfTraining, colors=modules_train, excludeGrey=TRUE)
 rm(dfTraining)
 ME_train = PCs_train$eigengenes
-write.csv(ME_train, file='../data/nci_almanac_preprocessed/omics/train_module_eigengenes.csv', row.names = FALSE)
+write.csv(ME_train, file='../data/nci_almanac_preprocessed/omics/split/train_module_eigengenes.csv', row.names = FALSE)
 
 # Load validation dataset and calculate moduleEigengenes for modules identified in the training set
 dfValidation = read.csv('../data/nci_almanac_preprocessed/omics/split/merged_rnaseq_fpkm_prot_coding_val.csv.gz')
@@ -62,7 +68,7 @@ dfValidation = dfValidation[, !(colnames(dfValidation) %in% c("CELLNAME"))]
 PCs_val = moduleEigengenes(dfValidation, colors=modules_train, excludeGrey=TRUE)
 rm(dfValidation)
 ME_val = PCs_val$eigengenes
-write.csv(ME_val, file='../data/nci_almanac_preprocessed/omics/val_module_eigengenes.csv', row.names = FALSE)
+write.csv(ME_val, file='../data/nci_almanac_preprocessed/omics/split/val_module_eigengenes.csv', row.names = FALSE)
 
 # Load test dataset and calculate moduleEigengenes for modules identified in the training set
 dfTest = read.csv('../data/nci_almanac_preprocessed/omics/split/merged_rnaseq_fpkm_prot_coding_test.csv.gz')
@@ -72,11 +78,11 @@ rm(dfTest)
 ME_test = PCs_test$eigengenes
 write.csv(ME_test, file='../data/nci_almanac_preprocessed/omics/split/test_module_eigengenes.csv', row.names = FALSE)
 
-# Load full dataset and calculate moduleEigengenes for modules identified in the training set
-dfFull = read.csv('../data/nci_almanac_preprocessed/omics/merged/merged_rnaseq_fpkm_prot_coding.csv.gz')
-dfFull = dfFull[, !(colnames(dfFull) %in% c("CELLNAME"))]
-PCs_full = moduleEigengenes(dfFull, colors=modules_train, excludeGrey=TRUE)
-#PCs_full = moduleEigengenes(dfFull, colors=modules_train, trapErrors=TRUE, returnValidOnly=TRUE)
-rm(dfFull)
-ME_full = PCs_full$eigengenes
-write.csv(ME_full, file='../data/nci_almanac_preprocessed/omics/full_module_eigengenes.csv', row.names = FALSE)
+# # Load full dataset and calculate moduleEigengenes for modules identified in the training set
+# dfFull = read.csv('../data/nci_almanac_preprocessed/omics/merged/merged_rnaseq_fpkm_prot_coding.csv.gz')
+# dfFull = dfFull[, !(colnames(dfFull) %in% c("CELLNAME"))]
+# PCs_full = moduleEigengenes(dfFull, colors=modules_train, excludeGrey=TRUE)
+# #PCs_full = moduleEigengenes(dfFull, colors=modules_train, trapErrors=TRUE, returnValidOnly=TRUE)
+# rm(dfFull)
+# ME_full = PCs_full$eigengenes
+# write.csv(ME_full, file='../data/nci_almanac_preprocessed/omics/full_module_eigengenes.csv', row.names = FALSE)
