@@ -34,10 +34,10 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 
 		subnetwork_type_to_output_names = {'expr (landmark)': 'rnaseq_fpkm_landmark_minmaxscaled',
 									  'expr (NCG)': 'rnaseq_fpkm_ncg_minmaxscaled',
-									  'expr (DGI)': 'rnaseq_fpkm_targets_full_minmaxscaled',
-									  'expr (DGI + NCG)': 'rnaseq_fpkm_targets_ncg_minmaxscaled',
+									  'expr (DGI)': 'rnaseq_fpkm_dgi_minmaxscaled',
+									  'expr (DGI + NCG)': 'rnaseq_fpkm_dgi_ncg_minmaxscaled',
 									  'expr (COSMIC)': 'rnaseq_fpkm_cosmic_minmaxscaled',
-									  'expr (DGI + landmark)': 'rnaseq_fpkm_targets_landmark_minmaxscaled',
+									  'expr (DGI + landmark)': 'rnaseq_fpkm_dgi_landmark_minmaxscaled',
 									  'expr (UMAP)': 'umap',
 									  'expr (WGCNA)': 'merged_rnaseq_fpkm_prot_coding',
 									  'expr (protein coding, clustering order 1D CNN)': 'rnaseq_fpkm_prot_coding_1dconv_clustering_order',
@@ -55,7 +55,7 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 		elif expr_subnetwork_type == 'expr (DGI)':
 			omics_preprocessor.filter_genes(use_targets=True)
 			omics_preprocessor.save_full_dataset(
-				output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_target_genes_full.csv')
+				output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_dgi_genes.csv')
 		elif expr_subnetwork_type == 'expr (landmark)':
 			omics_preprocessor.filter_genes(use_landmark=True)
 			omics_preprocessor.save_full_dataset(
@@ -71,11 +71,11 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 		elif expr_subnetwork_type == 'expr (DGI + NCG)':
 			omics_preprocessor.filter_genes(use_targets=True, use_ncg=True)
 			omics_preprocessor.save_full_dataset(
-				output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_targets_full_ncg_genes.csv')
+				output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_dgi_ncg_genes.csv')
 		elif expr_subnetwork_type == 'expr (DGI + landmark)':
 			omics_preprocessor.filter_genes(use_targets=True, use_landmark=True)
 			omics_preprocessor.save_full_dataset(
-				output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_targets_full_landmark_genes.csv')
+				output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/rnaseq_fpkm_dgi_landmark_genes.csv')
 
 		omics_preprocessor.merge(
 			dataset_to_merge_filepath='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv')
@@ -108,8 +108,8 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 			mut_preprocessor = OmicsDatasetPreprocessor(dataset_filepath='../data/nci_almanac_preprocessed/omics/unmerged/mut_gene_level_binarized.csv',
 			                                            id_col=id_col)
 			mut_preprocessor.filter_genes(use_targets=True)
-			mut_preprocessor.save_full_dataset(output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/mut_gene_level_binarized_target_genes.csv')
-			output_name = 'merged_mut_gene_level_binarized_target_genes'
+			mut_preprocessor.save_full_dataset(output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/mut_gene_level_binarized_dgi_genes.csv')
+			output_name = 'merged_mut_gene_level_binarized_dgi_genes'
 		elif mut_subnetwork_type == 'mut (pathway-level)':
 			mut_preprocessor = OmicsDatasetPreprocessor(dataset_filepath='../data/nci_almanac_preprocessed/omics/unmerged/mut_pathway_level_binarized.csv',
 			                                            id_col=id_col)
@@ -127,11 +127,11 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 			cnv_preprocessor = OmicsDatasetPreprocessor(dataset_filepath='../data/nci_almanac_preprocessed/omics/unmerged/cnvs_gistic_prot_coding.csv',
 			                                            id_col=id_col)
 			cnv_preprocessor.filter_genes(use_targets=True, use_aliases=False) # use_aliases = False because I didn't use them originally
-			cnv_preprocessor.save_full_dataset(output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/cnvs_gistic_target_genes.csv')
+			cnv_preprocessor.save_full_dataset(output_filepath='../data/nci_almanac_preprocessed/omics/unmerged/cnvs_gistic_dgi_genes.csv')
 			cnv_preprocessor.merge(dataset_to_merge_filepath='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv')
 			cnv_preprocessor.split('../data/splits/train_val_test_groups_split_inds_12321.pkl')
 			cnv_preprocessor.save_split_datasets(output_dir='../data/nci_almanac_preprocessed/omics/split',
-			                                     output_name='merged_cnvs_gistic_target_genes',
+			                                     output_name='merged_cnvs_gistic_dgi_genes',
 			                                     output_format='.npy',
 			                                     drop_id=True)
 

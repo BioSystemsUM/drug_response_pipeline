@@ -26,7 +26,7 @@ def shap_analysis():
                                       input_order=['expr', 'drugA', 'drugB'])
     train_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_train.npy')
     train_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_train.npy')
-    train_dataset.load_expr('../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_full_minmaxscaled_train.npy')
+    train_dataset.load_expr('../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_dgi_minmaxscaled_train.npy')
 
     print('loading test data')
     test_dataset = MultiInputDataset(response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
@@ -35,8 +35,8 @@ def shap_analysis():
                                      input_order=['expr', 'drugA', 'drugB'])
     test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_test.npy')
     test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_test.npy')
-    test_dataset.load_expr('../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_full_minmaxscaled_test.npy')
-    test_dataset.load_feature_names(feature_names_filepath='../data/nci_almanac_preprocessed/targets_ecfp4_model_feature_names.pkl')
+    test_dataset.load_expr('../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_dgi_minmaxscaled_test.npy')
+    test_dataset.load_feature_names(feature_names_filepath='../data/nci_almanac_preprocessed/dgi_ecfp4_model_feature_names.pkl')
 
     # Save predictions to file for later
     model = keras.models.load_model('../results/2021-07-06_12-19-03/train_set_model.h5',

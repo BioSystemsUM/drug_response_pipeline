@@ -7,7 +7,7 @@ with open('../results/2021-10-26_14-36-02/train_model.pkl', 'rb') as f:
 with open('../results/2021-09-27_23-01-20/train_model.pkl', 'rb') as f:
 	rf_model = pickle.load(f)
 
-with open('../data/nci_almanac_preprocessed/targets_ecfp4_model_feature_names.pkl', 'rb') as f:
+with open('../data/nci_almanac_preprocessed/dgi_ecfp4_model_feature_names.pkl', 'rb') as f:
 	feature_names_dict = pickle.load(f)
 feature_names = feature_names_dict['drugA'] + feature_names_dict['drugB'] + feature_names_dict['expr']
 
