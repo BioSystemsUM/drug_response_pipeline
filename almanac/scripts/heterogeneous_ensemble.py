@@ -1,175 +1,56 @@
-import os
+import numpy as np
+import pandas as pd
 
-from spektral.layers import GCNConv, GlobalSumPool
-
-from src.dataset.dataset import MultiInputDataset
-from src.models.ensembles import VotingEnsemble
-from src.utils.utils import save_evaluation_results
 from src.scoring import scoring_metrics
-
-os.environ['CUDA_VISIBLE_DEVICES'] = "3"
-os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+from src.utils.utils import save_evaluation_results
 
 
-def run_ensemble(model_description, output_file):
-	"""Evaluate a heterogeneous ensemble model comprising the top 10 deep learning models + the LightGBM, XGBoost and
-	RF models developed in our study."""
+def calculate_ensemble_scores(paths_to_saved_predictions, ensemble_description):
+    y_true = None
+    base_model_predictions = []
+    for pred_file in paths_to_saved_predictions:
+        df = pd.read_csv(pred_file)
+        if y_true is None:
+            y_true = df['y_true'].values
+            experiments = df['experiment']
+        base_model_predictions.append(df['y_pred'].values)
 
-	print('loading test data')
-	dgi_ecfp4_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	dgi_ecfp4_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_test.npy')
-	dgi_ecfp4_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_test.npy')
-	dgi_ecfp4_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_full_minmaxscaled_test.npy')
-	dgi_ecfp4_test_dataset.concat_features()
+    ensemble_pred = np.mean(np.array(base_model_predictions), axis=0)
 
-	# landmark_ecfp4_test_dataset
-	landmark_ecfp4_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	landmark_ecfp4_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_test.npy')
-	landmark_ecfp4_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_test.npy')
-	landmark_ecfp4_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_landmark_minmaxscaled_test.npy')
+    ensemble_pred_df = pd.DataFrame(data={'experiment': experiments,
+                            'y_true': y_true,
+                            'y_pred': ensemble_pred})
+    ensemble_pred_df.to_csv('../results/ensemble_predictions.csv')
 
-	# cosmic_ecfp4_test_dataset
-	cosmic_ecfp4_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	cosmic_ecfp4_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_test.npy')
-	cosmic_ecfp4_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_test.npy')
-	cosmic_ecfp4_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_cosmic_minmaxscaled_test.npy')
+    scores_dict = {}
+    metrics = ['mean_squared_error', 'pearson', 'r2_score', 'root_mean_squared_error', 'spearman']
+    for metric_name in metrics:
+        if metric_name == 'root_mean_squared_error':
+            scores_dict[metric_name] = scoring_metrics.mean_squared_error(y_true, ensemble_pred, squared=False)
+        else:
+            metric_func = getattr(scoring_metrics, metric_name)
+            scores_dict[metric_name] = metric_func(y_true, ensemble_pred)
+    print(scores_dict)
 
-	# ncg_ecfp4_test_dataset
-	ncg_ecfp4_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	ncg_ecfp4_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_test.npy')
-	ncg_ecfp4_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_test.npy')
-	ncg_ecfp4_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_ncg_minmaxscaled_test.npy')
-
-	# dgi_landmark_ecfp4_test_dataset
-	dgi_landmark_ecfp4_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	dgi_landmark_ecfp4_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_test.npy')
-	dgi_landmark_ecfp4_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_test.npy')
-	dgi_landmark_ecfp4_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_landmark_minmaxscaled_test.npy')
-
-	# dgi_ncg_ecfp4_test_dataset
-	dgi_ncg_ecfp4_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	dgi_ncg_ecfp4_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_test.npy')
-	dgi_ncg_ecfp4_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_test.npy')
-	dgi_ncg_ecfp4_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_ncg_minmaxscaled_test.npy')
-
-	# dgi_gcn_test_dataset
-	dgi_gcn_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	dgi_gcn_test_dataset.load_graph_data(nodes_file='../data/nci_almanac_preprocessed/drugs/GCN_drugA_nodes_test.npy', adj_file='../data/nci_almanac_preprocessed/drugs/GCN_drugA_adjmatrix_test.npy')
-	dgi_gcn_test_dataset.load_graph_data(nodes_file='../data/nci_almanac_preprocessed/drugs/GCN_drugB_nodes_test.npy', adj_file='../data/nci_almanac_preprocessed/drugs/GCN_drugB_adjmatrix_test.npy')
-	dgi_gcn_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_full_minmaxscaled_test.npy')
-
-
-	# dgi_layeredfp_test_dataset
-	dgi_layeredfp_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	dgi_layeredfp_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/LayeredFPFeaturizer_drugA_test.npy')
-	dgi_layeredfp_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/LayeredFPFeaturizer_drugB_test.npy')
-	dgi_layeredfp_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_full_minmaxscaled_test.npy')
-
-	# dgi_mte_test_dataset
-	dgi_mte_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	dgi_mte_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/MTEmbeddingsFeaturizer_drugA_test.npy')
-	dgi_mte_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/MTEmbeddingsFeaturizer_drugB_test.npy')
-	dgi_mte_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_full_minmaxscaled_test.npy')
-
-	dgi_mut_cnv_ecfp4_test_dataset = MultiInputDataset(
-		response_dataset_path='../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-		id_cols=['CELLNAME', 'NSC1', 'NSC2'],
-		output_col='COMBOSCORE')
-	dgi_mut_cnv_ecfp4_test_dataset.load_drugA('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugA_test.npy')
-	dgi_mut_cnv_ecfp4_test_dataset.load_drugB('../data/nci_almanac_preprocessed/drugs/ECFP4_1024_drugB_test.npy')
-	dgi_mut_cnv_ecfp4_test_dataset.load_expr(
-		'../data/nci_almanac_preprocessed/omics/split/rnaseq_fpkm_targets_full_minmaxscaled_test.npy')
-	dgi_mut_cnv_ecfp4_test_dataset.load_mut('../data/nci_almanac_preprocessed/omics/split/merged_mut_pathway_level_binarized_test.npy')
-	dgi_mut_cnv_ecfp4_test_dataset.load_cnv('../data/nci_almanac_preprocessed/omics/split/merged_cnvs_gistic_target_genes_test.npy')
-
-
-	paths_to_saved_models = ['../results/2021-07-06_12-19-03/train_set_model.h5',  # DL (expr (DGI) + drugs (ECFP4)
-	                         '../results/2021-07-06_12-02-29/train_set_model.h5', # DL (expr (landmark) + drugs (ECFP4)
-	                         '../results/2021-07-06_12-12-35/train_set_model.h5', # DL (expr (COSMIC) + drugs (ECFP4)
-	                         '../results/2021-09-09_15-05-24/train_set_model', # DL (expr (DGI) + mut (pathway-level) + cnv (DGI) + drug (ECFP4)
-	                         '../results/2021-07-13_20-03-54/train_set_model', # LayeredFP
-	                         '../results/2021-07-13_15-43-50/train_set_model', # MTE
-	                         '../results/2021-07-06_12-21-29/train_set_model.h5', # NCG
-	                         '../results/2021-07-06_12-37-08/train_set_model.h5', # DGI + landmark
-	                         '../results/2021-07-06_12-38-01/train_set_model.h5', # DGI + NCG
-	                         '../results/2021-10-26_14-36-02/train_model.pkl',  # LGBM
-	                         '../results/2021-09-27_12-58-08/train_model.pkl',  # XGBoost
-	                         '../results/2021-09-27_23-01-20/train_model.pkl', # RF
-	                         '../results/2021-07-14_22-20-49/train_set_model',  # GCN
-	                         ]
-
-	datasets = [dgi_ecfp4_test_dataset,
-	            landmark_ecfp4_test_dataset,
-	            cosmic_ecfp4_test_dataset,
-	            dgi_mut_cnv_ecfp4_test_dataset,
-	            dgi_layeredfp_test_dataset,
-	            dgi_mte_test_dataset,
-	            ncg_ecfp4_test_dataset,
-	            dgi_landmark_ecfp4_test_dataset,
-	            dgi_ncg_ecfp4_test_dataset,
-	            dgi_ecfp4_test_dataset,
-	            dgi_ecfp4_test_dataset,
-	            dgi_ecfp4_test_dataset,
-	            dgi_gcn_test_dataset,
-	            ]
-	custom_objects = []
-	for model in paths_to_saved_models:
-		if model == '../results/2021-07-14_22-20-49/train_set_model':
-			custom_objects.append({'keras_r2_score': scoring_metrics.keras_r2_score,
-			                       'keras_spearman': scoring_metrics.keras_spearman,
-			                       'keras_pearson': scoring_metrics.keras_pearson,
-			                       'GCNConv': GCNConv,
-			                       'GlobalSumPool': GlobalSumPool})
-		else:
-			custom_objects.append({'keras_r2_score': scoring_metrics.keras_r2_score,
-			                       'keras_spearman': scoring_metrics.keras_spearman,
-			                       'keras_pearson': scoring_metrics.keras_pearson})
-	print('creating ensemble')
-	ensemble = VotingEnsemble(base_models=None, mode='regression')
-	ensemble.load_models(paths_to_saved_models, custom_objects)
-	results = ensemble.evaluate(datasets, metrics=['r2_score', 'mean_squared_error', 'pearson', 'spearman'])
-	save_evaluation_results(results, hyperparams={},
-	                        model_descr=model_description,
-	                        model_dir='',
-	                        output_filepath=output_file)
-
+    save_evaluation_results(scores_dict, hyperparams={},
+                            model_descr=ensemble_description,
+                            model_dir='',
+                            output_filepath='../results/ensemble_evaluation_results.csv')
 
 if __name__ == '__main__':
-	run_ensemble(model_description='Voting Ensemble - Top 10 DL models +LGBM+XGBoost+RF',
-	             output_file='../results/ensemble_evaluation_results.csv')
+    saved_predictions = ['../results/2021-07-06_12-19-03/predictions.csv',  # expr (DGI) + drugs (ECFP4)
+                         '../results/2021-07-06_12-02-29/predictions.csv',  # expr (landmark) + drugs (ECFP4)
+                         '../results/2021-07-06_12-12-35/predictions.csv',  # expr (COSMIC) + drugs (ECFP4)
+                         '../results/2021-09-09_15-05-24/predictions.csv', # expr (DGI) + mut (pathway-level) + cnv (DGI) + drugs (ECFP4)
+                         '../results/2021-07-13_20-03-54/predictions.csv',  # expr (DGI) + drugs (LayeredFP)
+                         '../results/2021-07-10_14-02-58/predictions.csv', # expr (protein coding, clustering order 1D CNN) + drugs (ECFP4)
+                         '../results/2021-07-13_15-43-50/predictions.csv',  # expr (DGI) + drugs (MTE)
+                         '../results/2021-07-14_22-20-49/predictions.csv',  # expr (DGI) + drugs (GCN)
+                         '../results/2021-07-11_13-02-09/predictions.csv', # expr (protein coding) + drugs (ECFP4)
+                         '../results/2021-07-06_12-21-29/predictions.csv',  # expr (NCG) + drugs (ECFP4)
+                         '../results/2021-10-26_14-36-02/predictions.csv',  # LGBM
+                         '../results/2021-09-27_12-58-08/predictions.csv',  # XGBoost
+                         '../results/2021-09-27_23-01-20/predictions.csv'  # RF
+                         ]
+    calculate_ensemble_scores(paths_to_saved_predictions=saved_predictions,
+                              ensemble_description='Voting Ensemble - Top 10 DL models +LGBM+XGBoost+RF')
