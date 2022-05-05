@@ -1,4 +1,5 @@
 import argparse
+import pickle
 
 from src.preprocessing.preprocessing import DrugDatasetPreprocessor
 from src.utils.utils import build_char_dict
@@ -29,9 +30,12 @@ def create_drug_files(featurization_type):
 		split_inds_file='../data/splits/train_val_test_groups_split_inds_12321.pkl')
 
 	# For TextCNN
-	char_dict, seq_length = build_char_dict('../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv',
-											smiles_cols=['SMILES_A', 'SMILES_B'],
-											save=False)
+	# char_dict, seq_length = build_char_dict('../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples.csv',
+	# 										smiles_cols=['SMILES_A', 'SMILES_B'],
+	# 										save=False)
+	with open('../data/char_dict_seq_len.pkl', 'rb') as f:
+		char_dict, seq_length = pickle.load(f)
+
 	# For GCN and GAT
 	max_n_atoms_A = drugA_preprocessor._get_max_number_of_atoms()
 	max_n_atoms_B = drugB_preprocessor._get_max_number_of_atoms()
