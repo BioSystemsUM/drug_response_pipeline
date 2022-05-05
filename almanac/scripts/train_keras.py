@@ -4,6 +4,7 @@ from datetime import datetime
 
 import dill as pickle
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import yaml
 from tensorflow.keras.callbacks import EarlyStopping, CSVLogger
@@ -14,6 +15,7 @@ from src.dataset.dataset import MultiInputDataset
 from src.model_selection.model_selection import KerasRayTuneSearch
 from src.models import drug_pairs_build_functions
 from src.utils.utils import save_evaluation_results, plot_keras_history, get_dataset_dims
+from src.scoring import scoring_metrics
 
 
 def main(settings):
@@ -156,11 +158,34 @@ def main(settings):
     test_dataset.load_graph_data(nodes_file=settings['test_drugB_atom_feat_filepath'],
                                  adj_file=settings['test_drugB_adj_filepath'])
 
-    evaluation_results = best_model.evaluate(x=test_dataset.X_dict, batch_size=64, y=test_dataset.y, return_dict=True)
-    save_evaluation_results(evaluation_results, best_hyperparams, settings['model_description'], output_dir,
-                            settings['evaluation_output'])
+    # evaluation_results = best_model.evaluate(x=test_dataset.X_dict, batch_size=64, y=test_dataset.y, return_dict=True)
+    # save_evaluation_results(evaluation_results, best_hyperparams, settings['model_description'], output_dir,
+    #                         settings['evaluation_output'])
+
+    # Changed evaluation part because the .evaluate method computes the scores batch by batch:
+    # Get predictions and save
+    y_pred = np.squeeze(best_model.predict(test_dataset.X_dict, batch_size=64))
+    df = pd.DataFrame(data={'experiment': test_dataset.get_row_ids(sep='+'),
+                            'y_true': test_dataset.y,
+                            'y_pred': y_pred})
+    df.to_csv(os.path.join(output_dir, 'predictions.csv'), index=False)
+
+    # Evaluate
+    evaluation_results = {}
+    metrics = ['mean_squared_error', 'pearson', 'r2_score', 'root_mean_squared_error', 'spearman']
+    for metric_name in metrics:
+        if metric_name == 'root_mean_squared_error':
+            evaluation_results[metric_name] = scoring_metrics.mean_squared_error(test_dataset.y, y_pred, squared=False)
+        else:
+            metric_func = getattr(scoring_metrics, metric_name)
+            evaluation_results[metric_name] = metric_func(test_dataset.y, y_pred)
+
+    # Save results
+    save_evaluation_results(results_dict=evaluation_results, hyperparams=best_hyperparams,
+                            model_descr=settings['model_description'],
+                            model_dir=output_dir, output_filepath=settings['evaluation_output'])
+
     del test_dataset
-    # TODO: add option to save predictions (not saving them for all models because files are too big)
 
     try:
         best_model.save(os.path.join(output_dir, 'train_set_model'))
