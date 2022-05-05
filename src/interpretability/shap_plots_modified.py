@@ -526,7 +526,7 @@ def waterfall(shap_values, max_display=10, show=True):
 		txt_obj = pl.text(
 			pos_lefts[i] + (5 / 72) * bbox_to_xscale + dist, pos_inds[i], format_value(pos_widths[i], '%+0.02f'),
 			horizontalalignment='left', verticalalignment='center', color=colors.red_rgb,
-			fontsize=12
+			fontsize=16  #12
 		)
 
 	# draw the negative arrows
@@ -568,13 +568,13 @@ def waterfall(shap_values, max_display=10, show=True):
 		txt_obj = pl.text(
 			neg_lefts[i] - (5 / 72) * bbox_to_xscale + dist, neg_inds[i], format_value(neg_widths[i], '%+0.02f'),
 			horizontalalignment='right', verticalalignment='center', color=colors.blue_rgb,
-			fontsize=12
+			fontsize=16 #12
 		)
 
 	# draw the y-ticks twice, once in gray and then again with just the feature names in black
 	ytick_pos = list(range(num_features)) + list(
 		np.arange(num_features) + 1e-8)  # The 1e-8 is so matplotlib 3.3 doesn't try and collapse the ticks
-	pl.yticks(ytick_pos, yticklabels[:-1] + [l.split('=')[-1] for l in yticklabels[:-1]], fontsize=13)
+	pl.yticks(ytick_pos, yticklabels[:-1] + [l.split('=')[-1] for l in yticklabels[:-1]], fontsize=17) # fontsize=13
 
 	# put horizontal lines for each feature row
 	for i in range(num_features):
@@ -591,7 +591,7 @@ def waterfall(shap_values, max_display=10, show=True):
 	pl.gca().spines['right'].set_visible(False)
 	pl.gca().spines['top'].set_visible(False)
 	pl.gca().spines['left'].set_visible(False)
-	ax.tick_params(labelsize=13)
+	ax.tick_params(labelsize=17) #13
 	# pl.xlabel("\nModel output", fontsize=12)
 
 	# draw the E[f(X)] tick mark
@@ -600,7 +600,7 @@ def waterfall(shap_values, max_display=10, show=True):
 	ax2.set_xlim(xmin, xmax)
 	ax2.set_xticks(
 		[base_values, base_values + 1e-8])  # The 1e-8 is so matplotlib 3.3 doesn't try and collapse the ticks
-	ax2.set_xticklabels(["\n$E[f(X)]$", "\n$ = " + format_value(base_values, "%0.03f") + "$"], fontsize=12, ha="left")
+	ax2.set_xticklabels(["\n$E[f(X)]$", "\n$ = " + format_value(base_values, "%0.03f") + "$"], fontsize=16, ha="left") #fontsize=12
 	ax2.spines['right'].set_visible(False)
 	ax2.spines['top'].set_visible(False)
 	ax2.spines['left'].set_visible(False)
@@ -610,7 +610,7 @@ def waterfall(shap_values, max_display=10, show=True):
 	ax3.set_xlim(xmin, xmax)
 	ax3.set_xticks([base_values + values.sum(),
 	                base_values + values.sum() + 1e-8])  # The 1e-8 is so matplotlib 3.3 doesn't try and collapse the ticks
-	ax3.set_xticklabels(["$f(x)$", "$ = " + format_value(fx, "%0.03f") + "$"], fontsize=12, ha="left")
+	ax3.set_xticklabels(["$f(x)$", "$ = " + format_value(fx, "%0.03f") + "$"], fontsize=16, ha="left") # fontsize=12
 	tick_labels = ax3.xaxis.get_majorticklabels()
 	tick_labels[0].set_transform(
 		tick_labels[0].get_transform() + matplotlib.transforms.ScaledTranslation(-10 / 72., 0, fig.dpi_scale_trans))
