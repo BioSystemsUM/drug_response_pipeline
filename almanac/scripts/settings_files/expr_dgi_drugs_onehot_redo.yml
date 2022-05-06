@@ -1,6 +1,6 @@
 batch_size: 64
 epochs: 500
-evaluation_output: ../results/dl_model_evaluation_results_cellminercdb_with_hyperparams.csv
+evaluation_output: ../results/dl_model_evaluation_results_cellminercdb_recalculated_scores.csv
 gpu_to_use:
 - 6
 main_metric: val_mean_squared_error
