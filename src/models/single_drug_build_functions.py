@@ -31,7 +31,7 @@ def expr_drug_dense_model(expr_dim=None, drug_dim=None, expr_hlayers_sizes='[10]
 	# Additional dense layers after concatenating:
 	main_branch = dense_submodel(concat, hlayers_sizes=predictor_hlayers_sizes,
 	                             l1_regularization=l1, l2_regularization=l2,
-	                             hidden_activation=hidden_activation, input_dropout=input_dropout,
+	                             hidden_activation=hidden_activation, input_dropout=0,
 	                             hidden_dropout=hidden_dropout)
 	# Add output layer
 	output = Dense(1, activation='linear', kernel_initializer=initializer, name='output')(main_branch)
@@ -67,7 +67,7 @@ def expr_drug_textcnn_model(expr_dim=None, drug_dim=None, expr_hlayers_sizes='[1
 	drug_input = Input(shape=(drug_seq_length,), dtype=tf.int32, name='drugA')
 	expr = dense_submodel(expr_input, hlayers_sizes=expr_hlayers_sizes, l1_regularization=l1, l2_regularization=l2,
 	                      hidden_activation=hidden_activation, input_dropout=input_dropout,
-	                      hidden_dropout=hidden_dropout, )
+	                      hidden_dropout=hidden_dropout)
 	drug_submodel = textcnn_submodel(seq_length=drug_seq_length, n_embedding=drug_n_embedding,
 	                                 char_dict=drug_char_dict, kernel_sizes=drug_kernel_sizes,
 	                                 num_filters=drug_num_filters, dropout=drug_dropout, l1=drug_l1, l2=drug_l2)
@@ -121,7 +121,7 @@ def expr_drug_gcn_model(expr_dim=None, drug_dim=None, expr_hlayers_sizes='[10]',
 
 	main_branch = dense_submodel(concat, hlayers_sizes=predictor_hlayers_sizes,
 	                             l1_regularization=l1, l2_regularization=l2,
-	                             hidden_activation=hidden_activation, input_dropout=input_dropout,
+	                             hidden_activation=hidden_activation, input_dropout=0,
 	                             hidden_dropout=hidden_dropout)
 	# Add output layer
 	output = Dense(1, activation='linear', kernel_initializer=initializer, name='output')(main_branch)
@@ -168,7 +168,7 @@ def expr_drug_gat_model(expr_dim=None, drug_dim=None, expr_hlayers_sizes='[10]',
 
 	main_branch = dense_submodel(concat, hlayers_sizes=predictor_hlayers_sizes,
 	                             l1_regularization=l1, l2_regularization=l2,
-	                             hidden_activation=hidden_activation, input_dropout=input_dropout,
+	                             hidden_activation=hidden_activation, input_dropout=0,
 	                             hidden_dropout=hidden_dropout)
 	# Add output layer
 	output = Dense(1, activation='linear', kernel_initializer=initializer, name='output')(main_branch)
@@ -365,7 +365,7 @@ def expr_mut_cnv_drug_dense_model(expr_dim=None, mut_dim=None, cnv_dim=None, dru
 	output = Dense(1, activation='linear', kernel_initializer=initializer, name='output')(main_branch)
 
 	# create Model object
-	model = Model(inputs=[mut_input, cnv_input, expr_input, drug_input], outputs=[output])
+	model = Model(inputs=[expr_input, mut_input, cnv_input, drug_input], outputs=[output])
 
 	# Define optimizer
 	opt_class = dict(getmembers(optimizers))[optimizer]
