@@ -261,7 +261,8 @@ def evaluate_ml_model(model, test_dataset, metrics):
     return scores_dict
 
 
-def plot_morgan_bits(smiles_file, smiles_col, sample_id, bits, drug_img_filepath, bits_img_filepath, prefix=None):
+def plot_morgan_bits(smiles_file, smiles_col, sample_id, bits, fp_radius, fp_length, drug_img_filepath,
+                     bits_img_filepath, prefix=None):
     """
     Draw 2D depictions of user-defined Morgan (ECFP) fingerprint bits that are 'ON' (set to 1) in a given molecule.
 
@@ -275,6 +276,10 @@ def plot_morgan_bits(smiles_file, smiles_col, sample_id, bits, drug_img_filepath
         The row containing the molecule for which the bits will be plotted.
     bits: list
         The Morgan fingerprint bits that will be plotted.
+    fp_radius:
+        The Morgan fingerprint radius.
+    fp_length:
+        The length of the fingerprint (number of bits).
     drug_img_filepath:
         Path to save the image of the full molecule.
     bits_img_filepath:
@@ -292,7 +297,7 @@ def plot_morgan_bits(smiles_file, smiles_col, sample_id, bits, drug_img_filepath
     drug = Chem.MolFromSmiles(sample[smiles_col])
     Draw.MolToFile(drug, drug_img_filepath, size=(500, 500))
     drug_bi = {}
-    drug_fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(drug, radius=2, nBits=1024, bitInfo=drug_bi)
+    drug_fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(drug, radius=fp_radius, nBits=fp_length, bitInfo=drug_bi)
     draw_opt = MolDrawOptions()
     draw_opt.padding = 0.1
     draw_opt.legendFontSize = 24
