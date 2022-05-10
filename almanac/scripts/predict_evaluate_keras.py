@@ -13,7 +13,20 @@ from src.scoring import scoring_metrics
 from src.utils.utils import save_evaluation_results
 
 
-def predict(settings_file, saved_model_path):
+def predict_evaluate(settings_file, saved_model_path, output_path):
+    """
+    Predict test set using a saved model and calculate scores.
+
+    Parameters
+    ----------
+    settings_file: str
+        Path to the settings file that was originally used.
+    saved_model_path: str
+        Path to the saved model.
+    output_path: str
+        Path to file where the results will be written.
+    """
+
     # Load settings file
     with open(settings_file, 'r') as stream:
         try:
@@ -79,7 +92,7 @@ def predict(settings_file, saved_model_path):
             scores_dict[metric_name] = metric_func(test_dataset.y, y_pred)
 
     save_evaluation_results(results_dict=scores_dict, hyperparams={}, model_descr=settings['model_description'],
-                            model_dir=model_dir, output_filepath='../results/recalculate_dl_scores.csv')
+                            model_dir=model_dir, output_filepath=output_path)
 
 
 if __name__ == '__main__':
@@ -92,6 +105,10 @@ if __name__ == '__main__':
                         '--saved-model-path',
                         type=str,
                         help='Path to the saved model.')
+    parser.add_argument('-o',
+                        '--output-path',
+                        type=str,
+                        help='Output filepath.')
     args = vars(parser.parse_args())
     print(args)
-    predict(**args)
+    predict_evaluate(**args)
