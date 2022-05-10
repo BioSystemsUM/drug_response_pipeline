@@ -272,7 +272,7 @@ class DrugDatasetPreprocessor(DatasetPreprocessor):
 		self.dataset = self.dataset.merge(smiles_df, how='inner', left_on=self.id_col, right_on='DRUG').drop(['DRUG'], axis=1)
 
 		if dropna: # drops rows that are missing SMILES strings
-			self.dataset.dropna(axis=0, how='any', subset=[smiles_col_name], inplace=False)
+			self.dataset.dropna(axis=0, how='any', subset=[smiles_col_name], inplace=True)
 
 	def standardize_smiles(self):
 		"""Standardize the molecules"""
@@ -345,16 +345,17 @@ class DrugDatasetPreprocessor(DatasetPreprocessor):
 		if 'max_num_atoms' not in featurizer_args:
 			featurizer_args['max_num_atoms'] = self._get_max_number_of_atoms()
 		featurizer = featurizers.GraphFeaturizer(**featurizer_args)
+		prefix, dataset_name = output_prefix.split('_')
 		if self.smiles_col is not None:
 			featurizer.featurize_df(dataset, self.smiles_col,
 			                        output_path_node_features=os.path.join(output_dir,
-			                                                               '%s_nodes.npy' % output_prefix),
+			                                                               '{prefix}_nodes_{name}.npy'.format(prefix=output_prefix, name=dataset_name)),
 			                        output_path_adjacency_matrices=os.path.join(output_dir,
-			                                                                    '%s_adjmatrix.npy' % output_prefix))
+																				'{prefix}_adjmatrix_{name}.npy'.format(prefix=output_prefix, name=dataset_name)))
 
 	def save_smiles_to_file(self, output_filepath):
 		"""Save the unique SMILES strings in the dataset to a txt file."""
-		smiles_list = list(set(self._get_unique_smiles()))
+		smiles_list = self._get_unique_smiles()
 		with open(output_filepath, 'w') as f:
 			for i, smiles in enumerate(smiles_list):
 				if i != len(smiles_list) - 1:
@@ -700,7 +701,7 @@ class OmicsDatasetPreprocessor(DatasetPreprocessor):
 	def get_chromosome_gene_order(self, output_filepath):
 		"""Order of the genes according to their chromosome positions."""
 		# TODO: improve code. right now it's very specific to the ALMANAC dataset and it's confusing
-		# Replace with HDGFRP3 with HDGFL3:
+		# Replace HDGFRP3 with HDGFL3:
 		omics_genes = ['HDGFL3' if gene == 'HDGFRP3' else gene for gene in self.dataset]
 		path = 'filtering_files/ensembl_gene_chromosome_pos.csv'
 		filepath = pkg_resources.resource_filename(__name__, path)
