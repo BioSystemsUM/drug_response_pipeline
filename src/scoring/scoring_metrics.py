@@ -27,7 +27,7 @@ def keras_pearson(y_true, y_pred):
 
 def keras_spearman(y_true, y_pred):
     """Calculate the Spearman correlation coefficient for Keras models"""
-    return tf.py_function(spearman, [tf.cast(y_true, tf.float32), tf.cast(y_pred, tf.float32)], Tout=tf.float32)
+    return tf.py_function(spearman, [tf.cast(y_true, tf.float64), tf.cast(y_pred, tf.float64)], Tout=tf.float64)
 
 
 def spearman(y, y_pred):
