@@ -24,9 +24,9 @@ class TrainTestSplit(object):
 		if self.split_inds is not None:
 			train_inds, test_inds = self.split_inds
 			X_train = multi_input_dataset.response_dataset.iloc[train_inds, :]
-			y_train = multi_input_dataset.y.iloc[train_inds, :]
+			y_train = multi_input_dataset.y[train_inds] # y is now a numpy array (it was a pd.Series previously)
 			X_test = multi_input_dataset.response_dataset.iloc[test_inds, :]
-			y_test = multi_input_dataset.y.iloc[test_inds, :]
+			y_test = multi_input_dataset.y[test_inds] # y is now a numpy array (it was a pd.Series previously)
 		else:
 			if mode == 'classification':
 				self.stratify = multi_input_dataset.y
@@ -36,8 +36,8 @@ class TrainTestSplit(object):
 			                                                    test_size=self.test_size,
 			                                                    stratify=self.stratify,
 			                                                    random_state=self.random_state)
-			train_inds = y_train.index.tolist()
-			test_inds = y_test.index.tolist()
+			train_inds = X_train.index.tolist()
+			test_inds = X_test.index.tolist()
 			self.split_inds = (train_inds, test_inds)
 
 		# split dataset_dict
@@ -80,27 +80,33 @@ class TrainValTestSplit(object):
 		if self.split_inds is not None:
 			train_inds, val_inds, test_inds = self.split_inds
 			X_train = multi_input_dataset.response_dataset.iloc[train_inds, :]
-			y_train = multi_input_dataset.y[train_inds]
+			y_train = multi_input_dataset.y[train_inds] # y is now a numpy array (it was a pd.Series previously)
 			X_val = multi_input_dataset.response_dataset.iloc[val_inds, :]
-			y_val = multi_input_dataset.y[val_inds]
+			y_val = multi_input_dataset.y[val_inds] # y is now a numpy array (it was a pd.Series previously)
 			X_test = multi_input_dataset.response_dataset.iloc[test_inds, :]
-			y_test = multi_input_dataset.y[test_inds]
+			y_test = multi_input_dataset.y[test_inds] # y is now a numpy array (it was a pd.Series previously)
 		else:
 			if mode == 'classification':
 				self.stratify = multi_input_dataset.y
 
 			X_train, X_val_test, y_train, y_val_test = train_test_split(multi_input_dataset.response_dataset,
-			                                                            multi_input_dataset.y,
-			                                                            test_size=self.test_size,
-			                                                            stratify=self.stratify,
-			                                                            random_state=self.random_state)
+																		multi_input_dataset.y,
+																		test_size=(self.test_size + self.val_size),
+																		stratify=self.stratify,
+																		random_state=self.random_state)
+			if mode == 'classification':
+				stratify_val_test = y_val_test
+			else:
+				stratify_val_test = None
 			X_val, X_test, y_val, y_test = train_test_split(X_val_test,
-			                                                y_val_test,
-			                                                test_size=self.test_size / (self.test_size + self.val_size),
-			                                                random_state=self.random_state)
-			train_inds = y_train.index.tolist()
-			val_inds = y_val.index.tolist()
-			test_inds = y_test.index.tolist()
+															y_val_test,
+															test_size=np.around(self.test_size / (self.val_size + self.test_size), 2),
+															stratify=stratify_val_test,
+															random_state=self.random_state)
+
+			train_inds = X_train.index.tolist()
+			val_inds = X_val.index.tolist()
+			test_inds = X_test.index.tolist()
 			self.split_inds = (train_inds, val_inds, test_inds)
 
 		# split dataset_dict
@@ -151,9 +157,9 @@ class KFoldSplit(object):
 		kfold_datasets = []
 		for i, (train_inds, val_inds) in enumerate(self.split_inds):
 			X_train = multi_input_dataset.response_dataset.iloc[train_inds, :]
-			y_train = multi_input_dataset.y.iloc[train_inds, :]
+			y_train = multi_input_dataset.y[train_inds] # y is now a numpy array (it was a pd.Series previously)
 			X_val = multi_input_dataset.response_dataset.iloc[val_inds, :]
-			y_val = multi_input_dataset.y.iloc [val_inds, :]
+			y_val = multi_input_dataset.y[val_inds] # y is now a numpy array (it was a pd.Series previously)
 
 			X_train_dict = {}
 			X_val_dict = {}
