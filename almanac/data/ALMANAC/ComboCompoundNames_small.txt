@@ -1,0 +1,108 @@
+740	Methotrexate
+750	Busulfan
+752	Thioguanine
+752	6-Thioguanine
+755	Mercaptopurine
+762	Mechlorethamine hydrochloride
+1390	Allopurinol
+3053	Dactinomycin
+3088	Chlorambucil
+6396	Thiotepa
+8806	Melphalan
+9706	Triethylenemelamine
+13875	Altretamine
+14229	Quinacrine hydrochloride
+18509	Aminolevulinic acid hydrochloride
+19893	Fluorouracil
+24559	Plicamycin
+24559	Mithramycin
+25154	Pipobroman
+26271	Cyclophosphamide
+26980	Mitomycin
+27640	Floxuridine
+32065	Hydroxyurea
+34462	Uracil mustard
+38721	Mitotane
+45388	Dacarbazine
+45923	Methoxsalen
+49842	Vinblastine sulfate
+49842	Vinblastine Sulfate Hydrate
+63878	Cytarabine hydrochloride
+66847	Thalidomide
+67574	Vincristine sulfate
+71423	Megestrol acetate
+77213	Procarbazine hydrochloride
+79037	Lomustine
+82151	Daunorubicin hydrochloride
+85998	Streptozocin
+92859	Arsenic trioxide
+102816	Azacitidine
+105014	Cladribine
+109724	Ifosfamide
+119875	Cisplatin
+122758	Tretinoin
+122819	Teniposide
+123127	Doxorubicin hydrochloride
+125066	Bleomycin sulfate
+125973	Paclitaxel
+127716	Decitabine
+138783	bendamustine hydrochloride
+141540	Etoposide
+169780	Dexrazoxane
+180973	Tamoxifen citrate
+218321	Pentostatin
+226080	Sirolimus
+241240	Carboplatin
+246131	Valrubicin
+266046	Oxaliplatin
+279836	Mitoxantrone
+296961	Amifostine
+362856	Temozolomide
+369100	Imiquimod
+409962	Carmustine
+606869	Clofarabine
+608210	Vinorelbine tartrate
+609699	Topotecan hydrochloride
+613327	Gemcitabine hydrochloride
+628503	Docetaxel
+681239	Bortezomib
+686673	Nelarabine
+698037	Pemetrexed Disodium 
+701852	Vorinostat
+702294	Estramustine phosphate sodium
+712807	Capecitabine
+713563	Exemestane
+715055	Gefitinib
+718781	Erlotinib hydrochloride
+719276	Fulvestrant
+719345	Letrozole
+719627	Celecoxib
+721517	Zoledronic acid
+732517	Dasatinib
+733504	Everolimus
+743414	Imatinib mesylate
+745750	Lapatinib ditosylate
+747599	Nilotinib
+747971	Sorafenib tosylate
+747972	Lenalidomide
+747973	Ixabepilone
+747974	Raloxifene hydrochloride
+755986	Vismodegib
+761432	Cabazitaxel
+118218	2-Fluoro Ara-A
+256439	Idarubicin hydrochloride
+256942	4'-Epiadriamycin
+673596	7-Ethyl-10-hydroxycamptothecin
+719344	Anastrozole
+749226	Abiraterone
+750690	Sunitinib (free base)
+754143	Romidepsin
+754230	pralatrexate
+756645	Crizotinib
+757441	Axitinib
+760766	Vandetanib
+761431	vemurafenib
+707389	Eribulin mesylate
+737754	Pazopanib hydrochloride
+753082	vemurafenib
+763371	Ruxolitinib
