@@ -1,2 +1,0 @@
-model,model_dir,max_depth,max_features,min_samples_leaf,min_samples_split,n_estimators,mean_squared_error,pearson,r2_score,spearman
-Random Forest - expr (COSMIC) + drug (ECFP4),test_files/2021-11-07_23-06-35,15,auto,1,3,398,3380.9922089656407,-0.1764269266341121,-0.46936627221042637,-0.2157473107894782
