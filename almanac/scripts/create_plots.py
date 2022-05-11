@@ -211,12 +211,12 @@ def plot_results(dl_results_file, ml_results_file, metrics, figsize=(7.5, 4.5), 
 	fig.savefig('../results/dl_vs_ml_models%s.pdf' % output_suffix, bbox_extra_artists=(lgd,), bbox_inches='tight', dpi=400)
 
 if __name__ == '__main__':
-	plot_results(dl_results_file='../results/dl_model_evaluation_results_cellminercdb_with_hyperparams.csv',
+	plot_results(dl_results_file='../results/dl_model_evaluation_results_cellminercdb_recalculated_scores.csv',
 				 ml_results_file='../results/ml_model_evaluation_results_cellminercdb.csv',
 				 metrics=['pearson', 'spearman', 'r2_score', 'root_mean_squared_error'],
 				 figsize=(7.5, 7.5),
 				 output_suffix='_recalculated_scores')
-	plot_results(dl_results_file='../results/dl_model_evaluation_results_cellminercdb_with_hyperparams.csv',
+	plot_results(dl_results_file='../results/dl_model_evaluation_results_cellminercdb_recalculated_scores.csv',
 				 ml_results_file='../results/ml_model_evaluation_results_cellminercdb.csv',
 				 metrics=['spearman', 'r2_score'],
 				 output_suffix='_paper_recalculated_scores')
