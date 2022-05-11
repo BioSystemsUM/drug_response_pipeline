@@ -34,7 +34,7 @@ deep learning and machine learning models, and to interpret deep learning models
 ## Installation
 The code can be installed as a Python package:
 ```bash
-pip install --timeout 2000 --retries 10 git+https://gitlab.bio.di.uminho.pt/dlrsb/drug_response_pipeline.git
+pip install git+https://github.com/BioSystemsUM/drug_response_pipeline.git
 ``` 
 
 ### Docker
@@ -42,7 +42,7 @@ A Dockerfile replicating the environment in which our analyses were performed is
 1. Install [docker](https://docs.docker.com/install/).
 2. Clone the repository and build a Docker image:
 ```bash
-git clone https://gitlab.bio.di.uminho.pt/dlrsb/drug_response_pipeline.git
+git clone https://github.com/BioSystemsUM/drug_response_pipeline.git
 
 docker build --squash -t drpred_tool -f docker/Dockerfile .
 ``` 
