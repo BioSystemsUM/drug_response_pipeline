@@ -1,17 +1,15 @@
 # Predicting drug synergy in cancer cell lines
 
 ## Data
-ALMANAC drug response data in the form of ComboScores for <cell line, drugA, drugB> triplets were
-and RNA-Seq data for the NCI-60 cell lines were downloaded from [CellMinerCDB](https://discover.nci.nih.gov/rsconnect/cellminercdb/).
+ALMANAC drug response data in the form of ComboScores for <cell line, drugA, drugB> triplets and RNA-Seq data for the NCI-60 cell lines were downloaded from [CellMinerCDB](https://discover.nci.nih.gov/rsconnect/cellminercdb/).
 
 Mutation and copy number variation data were downloaded from [CBioportal](https://www.cbioportal.org/study/summary?id=cellline_nci60).
 
 An SDF file mapping compound identifiers to SMILES strings ([ComboCompoundSet.sdf](https://wiki.nci.nih.gov/download/attachments/338237347/ComboCompoundSet.sdf?version=1&modificationDate=1493822360000&api=v2)) and a file mapping NSC identifiers to compound names ([ComboCompoundNames_small.txt](https://wiki.nci.nih.gov/download/attachments/338237347/ComboCompoundNames_small.txt?version=1&modificationDate=1493822467000&api=v2)) were obtained from DTP.
 
-The preprocessed response dataset and filtered gene expression, mutation and CNV files (before merging with the response 
-dataset) can be downloaded from https://nextcloud.bio.di.uminho.pt/s/p5RXgkQwH5HoEiw. 
-This repository also contains the fully preprocessed drug and gene expression data required to run the 
-expr<sub>DGI</sub> + drugs<sub>ECFP4</sub> model described in our study.  
+The preprocessed response dataset, the filtered gene expression, mutation and CNV files (before merging with the response 
+dataset), and the fully preprocessed drug and gene expression data required to run the 
+expr<sub>DGI</sub> + drugs<sub>ECFP4</sub> model described in our study can be downloaded from https://zenodo.org/record/6538771/files/nci_almanac_preprocessed.zip?download=1.   
 
 ## Running the scripts
 Use the following command to start a Docker container: 
@@ -36,28 +34,21 @@ python create_omics_files.py --expr-subnetwork-type 'expr (DGI)'
 
 Deep learning models can be trained and evaluated using the *train_keras.py* script and a configuration file: 
 ```bash
-python train_keras.py settings_files/expr_targets_full_minmaxscaler_drug_dense.yml
+python train_keras.py settings_files/expr_dgi_drugs_ecfp4.yml
 ``` 
 
 Machine learning models can be trained and evaluated in a similar manner:
 ```bash
-python train_sklearn.py settings_files/ml/expr_targets_drug_ecfp4_lgbm.yml
+python train_sklearn.py settings_files/ml/expr_dgi_drugs_ecfp4_lgbm.yml
 ``` 
 
 Our SHAP analysis was performed using the *interpret_almanac_model.py* script.
 
 
 ## Results
-The 'results' folder contains the full results tables (with results for several scoring metrics and information on the 
-tuned hyperparameters), the plots that were generated from these tables, and the results from the SHAP analysis, 
+The 'results' folder contains the full results tables, the plots that were generated from these tables, information on the 
+tuned hyperparameters, and results from the SHAP analysis, 
 including a CSV file containing the calculated SHAP values.
 
-Note: In our results (and settings) files, the drug-gene interactions (DGI) that were used to filter the omics files 
-were originally called "targets", and the expression dataset filtered by protein-coding genes was originally called 
-expr(full). In addition, in the original results table the description for the model trained on mutations 
-summarized at the pathway level ("expr(target genes, dense, MinMaxScaler) + mut (pathway-level, target genes) + cnv 
-(GISTIC, target genes) + drug (ECFP4, Dense)") mistakenly refers target genes after pathway-level, but the pathway-level 
-mutation data were not filtered using the DGI (targets) gene list.
-
 ## Trained models
-Our trained models can be downloaded from https://nextcloud.bio.di.uminho.pt/s/Tj2NT2kMGKXtZaq
+Our trained models can be downloaded from https://doi.org/10.5281/zenodo.6538771

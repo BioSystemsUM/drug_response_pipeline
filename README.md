@@ -8,22 +8,22 @@ deep learning and machine learning models, and to interpret deep learning models
 
 ## Requirements
 - python
-- pandas
+- pandas=1.2.3
 - tensorflow=2.2.0
 - deepchem=2.5.0
-- spektral=1.0
+- spektral=1.0.7
 - Ray Tune=1.0.1
 - hpbandster 
 - ConfigSpace
 - tune-sklearn
 - scikit-optimize
-- rdkit=
+- rdkit=2020.09.1.0
 - pubchempy
 - chembl_structure_pipeline
-- umap-learn
-- scikit-learn
-- xgboost
-- lightgbm
+- umap-learn=0.5.1
+- scikit-learn=0.22.1
+- xgboost=1.4.0
+- lightgbm=3.2.1
 - shap=0.39.0
 - matplotlib
 - seaborn
@@ -34,12 +34,9 @@ deep learning and machine learning models, and to interpret deep learning models
 ## Installation
 The code can be installed as a Python package:
 ```bash
-pip install git+https://gitlab.bio.di.uminho.pt/dlrsb/drug_response_pipeline.git
+pip install --timeout 2000 --retries 10 git+https://gitlab.bio.di.uminho.pt/dlrsb/drug_response_pipeline.git
 ``` 
-When installing directly from gitlab, it may be necessary to increase the timeout limit:
-```bash
-pip install --timeout 1000 git+https://gitlab.bio.di.uminho.pt/dlrsb/drug_response_pipeline.git
-``` 
+
 ### Docker
 A Dockerfile replicating the environment in which our analyses were performed is also provided:
 1. Install [docker](https://docs.docker.com/install/).
