@@ -47,8 +47,7 @@ Our SHAP analysis was performed using the *interpret_almanac_model.py* script.
 
 ## Results
 The 'results' folder contains the full results tables, the plots that were generated from these tables, information on the 
-tuned hyperparameters, and results from the SHAP analysis, 
-including a CSV file containing the calculated SHAP values.
+tuned hyperparameters, and results from the SHAP analysis.
 
 ## Trained models
 Our trained models can be downloaded from https://doi.org/10.5281/zenodo.6538771
