@@ -1,3 +1,4 @@
+import os
 import argparse
 import sys
 
@@ -47,10 +48,12 @@ def create_omics_files(expr_subnetwork_type, mut_subnetwork_type, cnv_subnetwork
 									  'expr (protein coding)': 'rnaseq_fpkm_prot_coding_minmaxscaled'}
 
 		if 'clustering' in expr_subnetwork_type:
-			omics_preprocessor.get_clustering_gene_order(output_filepath='../data/expr_conv/clustering_order_minmaxscaler_complete_correlation.pkl')
+			if not os.path.exists('../data/expr_conv/clustering_order_minmaxscaler_complete_correlation.pkl'):
+				omics_preprocessor.get_clustering_gene_order(output_filepath='../data/expr_conv/clustering_order_minmaxscaler_complete_correlation.pkl')
 			omics_preprocessor.reorder_genes(gene_order_filepath='../data/expr_conv/clustering_order_minmaxscaler_complete_correlation.pkl')
 		elif 'chromosome' in expr_subnetwork_type:
-			omics_preprocessor.get_chromosome_gene_order(output_filepath='../data/expr_conv/rnaseq_prot_coding_chromosome_position.pkl')
+			if not os.path.exists('../data/expr_conv/rnaseq_prot_coding_chromosome_position.pkl'):
+				omics_preprocessor.get_chromosome_gene_order(output_filepath='../data/expr_conv/rnaseq_prot_coding_chromosome_position.pkl')
 			omics_preprocessor.reorder_genes(gene_order_filepath='../data/expr_conv/rnaseq_prot_coding_chromosome_position.pkl')
 		elif expr_subnetwork_type == 'expr (DGI)':
 			omics_preprocessor.filter_genes(use_targets=True)
