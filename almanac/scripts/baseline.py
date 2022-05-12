@@ -10,12 +10,12 @@ def get_baseline_results(output_filepath='../results/model_evaluation_results_ce
     """Calculate performance scores for a baseline model that always predicts the mean of the training set"""
     train_dataset = MultiInputDataset(
         '../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_train.csv.gz',
-        'COMBOSCORE')
+        output_col='COMBOSCORE')
     mean = np.mean(train_dataset.y)
     del train_dataset
     test_dataset = MultiInputDataset(
         '../data/nci_almanac_preprocessed/response/almanac_cellminercdb_with_preprocessed_smiles_no_duplicate_triples_test.csv.gz',
-        'COMBOSCORE')
+        output_col='COMBOSCORE')
     predictions = np.full(shape=test_dataset.y.shape, fill_value=mean)
     mse = MeanSquaredError()
     mse.update_state(test_dataset.y, predictions)
