@@ -9,7 +9,7 @@ An SDF file mapping compound identifiers to SMILES strings ([ComboCompoundSet.sd
 
 The preprocessed response dataset, the filtered gene expression, mutation and CNV files (before merging with the response 
 dataset), and the fully preprocessed drug and gene expression data required to run the 
-expr<sub>DGI</sub> + drugs<sub>ECFP4</sub> model described in our study can be downloaded from https://zenodo.org/record/6538771/files/nci_almanac_preprocessed.zip?download=1.   
+expr<sub>DGI</sub> + drugs<sub>ECFP4</sub> model described in our study can be downloaded from https://doi.org/10.5281/zenodo.6545638.   
 
 ## Running the scripts
 Use the following command to start a Docker container: 
@@ -47,7 +47,7 @@ Our SHAP analysis was performed using the *interpret_almanac_model.py* script.
 
 ## Results
 The 'results' folder contains the full results tables, the plots that were generated from these tables, information on the 
-tuned hyperparameters, and results from the SHAP analysis.
+tuned hyperparameters, and results from the SHAP analysis. The full SHAP results table can be downloaded from https://doi.org/10.5281/zenodo.6545638.
 
 ## Trained models
-Our trained models can be downloaded from https://doi.org/10.5281/zenodo.6538771
+Our trained models can be downloaded from https://doi.org/10.5281/zenodo.6545638
