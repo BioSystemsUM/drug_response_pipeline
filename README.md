@@ -1,4 +1,4 @@
-# Drug response prediction tool
+# Drug synergy prediction tool
 
 This repository contains code to preprocess multiomics datasets and to build multimodal drug response prediction models using Tensorflow/Keras.
 It provides access to reusable model architectures, as well as separate feature-encoding subnetworks that can be combined
